@@ -110,6 +110,18 @@ PROVIDER_TIMEOUTS=duffel:30,amadeus:25,demo:5
 
 Cada valor se interpreta en segundos. Si un proveedor no tiene timeout configurado, el backend usa `20s`.
 
+## Deploy recomendado
+
+La opcion recomendada para publicarlo completo es `Railway`:
+
+- `backend/` como servicio `FastAPI`
+- `frontend/` como servicio `Next.js`
+- `PostgreSQL` administrado por Railway
+
+Guia paso a paso:
+
+- `docs/deploy-railway.md`
+
 ## Flujo actual
 
 1. El usuario completa contexto de viaje, perfil migratorio y loyalty.
