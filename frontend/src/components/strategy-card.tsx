@@ -4,7 +4,7 @@ import { Fragment, useMemo, useState } from "react";
 
 import { AppDictionary } from "@/i18n/dictionary";
 import { AppLocale } from "@/i18n/config";
-import { formatMinutes, postAnalyticsEvent } from "@/lib/api";
+import { formatFlightDatetimeUtc, formatMinutes, postAnalyticsEvent } from "@/lib/api";
 import { Strategy } from "@/types/travel";
 
 interface StrategyCardProps {
@@ -200,6 +200,16 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
                             {segment.airline} {segment.flight_number} · {segment.cabin_class} ·{" "}
                             {formatMinutes(segment.duration_minutes, locale)}
                           </p>
+                          <p className="mt-2 space-y-0.5 text-xs leading-5 text-slate-500">
+                            <span className="block">
+                              <span className="font-medium text-slate-600">{copy.segmentSchedule.departUtc}:</span>{" "}
+                              {formatFlightDatetimeUtc(segment.departure_at, locale)}
+                            </span>
+                            <span className="block">
+                              <span className="font-medium text-slate-600">{copy.segmentSchedule.arriveUtc}:</span>{" "}
+                              {formatFlightDatetimeUtc(segment.arrival_at, locale)}
+                            </span>
+                          </p>
                         </div>
                         {segIdx < slice.layovers.length ? (
                           <div className="ml-3 border-l-2 border-sky-200 pl-4 text-sm text-slate-600">
@@ -215,6 +225,7 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
                   </div>
                 ))}
               </div>
+              <p className="mt-4 text-xs leading-relaxed text-slate-500">{copy.segmentSchedule.utcFootnote}</p>
             </div>
           </div>
         </div>

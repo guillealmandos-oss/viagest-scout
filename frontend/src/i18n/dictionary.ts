@@ -116,6 +116,11 @@ export interface AppDictionary {
       sliceOther: string;
       connectionPrefix: string;
     };
+    segmentSchedule: {
+      departUtc: string;
+      arriveUtc: string;
+      utcFootnote: string;
+    };
     severityLabels: Record<"low" | "medium" | "high", string>;
   };
   feedback: {
@@ -332,6 +337,12 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         sliceInbound: "Vuelta",
         sliceOther: "Pierna {n}",
         connectionPrefix: "Conexión",
+      },
+      segmentSchedule: {
+        departUtc: "Salida (UTC)",
+        arriveUtc: "Llegada (UTC)",
+        utcFootnote:
+          "Horarios en tiempo universal coordinado (UTC), como suelen enviar los proveedores. La hora local en cada aeropuerto puede diferir.",
       },
       severityLabels: {
         low: "Bajo",
@@ -551,6 +562,12 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         sliceInbound: "Return",
         sliceOther: "Leg {n}",
         connectionPrefix: "Connection",
+      },
+      segmentSchedule: {
+        departUtc: "Departure (UTC)",
+        arriveUtc: "Arrival (UTC)",
+        utcFootnote:
+          "Times are shown in coordinated universal time (UTC), as providers typically return. Local time at each airport may differ.",
       },
       severityLabels: {
         low: "Low",

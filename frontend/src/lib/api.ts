@@ -77,3 +77,22 @@ export function formatMinutes(totalMinutes: number, locale: AppLocale): string {
   const minutes = totalMinutes % 60;
   return locale === "es" ? `${hours}h ${minutes}m` : `${hours}h ${minutes}m`;
 }
+
+/** UTC formatted timestamps — typical shape from Duffel / Amadeus ISO strings. */
+export function formatFlightDatetimeUtc(iso: string, locale: AppLocale): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) {
+    return iso;
+  }
+  const tag = locale === "es" ? "es-UY" : "en-US";
+  return new Intl.DateTimeFormat(tag, {
+    timeZone: "UTC",
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: locale === "en",
+  }).format(d);
+}
