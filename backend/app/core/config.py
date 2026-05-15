@@ -26,18 +26,45 @@ class Settings(BaseSettings):
     duffel_base_url: str = "https://api.duffel.com"
     duffel_version: str = "v2"
 
+    @staticmethod
+    def _normalize_origin(origin: str) -> str:
+        """Railway / paste mistakes often wrap origins or JSON in extra quotes."""
+        o = origin.strip()
+        while True:
+            if len(o) >= 2 and o.startswith('"') and o.endswith('"'):
+                o = o[1:-1].strip()
+            elif len(o) >= 2 and o.startswith("'") and o.endswith("'"):
+                o = o[1:-1].strip()
+            else:
+                break
+        if o.startswith("http"):
+            o = o.rstrip("/")
+        return o
+
     @field_validator("allowed_origins", mode="before")
     @classmethod
     def parse_allowed_origins(cls, value):
         if isinstance(value, list):
-            return value
+            return [cls._normalize_origin(str(o)) for o in value if str(o).strip()]
         if isinstance(value, str):
             stripped = value.strip()
             if not stripped:
                 return []
+            while True:
+                if len(stripped) >= 2 and stripped.startswith('"') and stripped.endswith('"'):
+                    stripped = stripped[1:-1].strip()
+                elif len(stripped) >= 2 and stripped.startswith("'") and stripped.endswith("'"):
+                    stripped = stripped[1:-1].strip()
+                else:
+                    break
             if stripped.startswith("["):
-                return json.loads(stripped)
-            return [item.strip() for item in stripped.split(",") if item.strip()]
+                try:
+                    parsed = json.loads(stripped)
+                except json.JSONDecodeError:
+                    parsed = None
+                if isinstance(parsed, list):
+                    return [cls._normalize_origin(str(item)) for item in parsed if str(item).strip()]
+            return [cls._normalize_origin(part) for part in stripped.split(",") if part.strip()]
         return value
 
     @field_validator("flight_providers", mode="before")
