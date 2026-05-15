@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -11,6 +13,7 @@ from app.services.orchestrator import SearchOrchestrator
 
 router = APIRouter(prefix="/api/v1/searches", tags=["searches"])
 service = SearchOrchestrator()
+logger = logging.getLogger(__name__)
 
 
 @router.get("", response_model=SearchListResponse)
@@ -31,6 +34,12 @@ async def create_search(
         return await service.execute_search(db, payload, locale)
     except UserFacingError as exc:
         raise HTTPException(status_code=exc.status_code, detail=t(locale, exc.message_key, **exc.params)) from exc
+    except Exception:
+        logger.exception("create_search failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=t(locale, "error.internal_server_error"),
+        ) from None
 
 
 @router.get("/{search_id}", response_model=SearchResponse)

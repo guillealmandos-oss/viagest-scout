@@ -2,7 +2,7 @@ import json
 from functools import lru_cache
 from typing import Annotated
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     duffel_api_token: str | None = None
     duffel_base_url: str = "https://api.duffel.com"
     duffel_version: str = "v2"
+    frontend_origin: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("FRONTEND_ORIGIN", "frontend_origin"),
+    )
 
     @staticmethod
     def _normalize_origin(origin: str) -> str:
@@ -66,6 +70,15 @@ class Settings(BaseSettings):
                     return [cls._normalize_origin(str(item)) for item in parsed if str(item).strip()]
             return [cls._normalize_origin(part) for part in stripped.split(",") if part.strip()]
         return value
+
+    @model_validator(mode="after")
+    def merge_frontend_origin_into_cors(self):
+        """Opcional en Railway: FRONTEND_ORIGIN=https://tu-frontend.up.railway.app sin tocar ALLOWED_ORIGINS."""
+        if self.frontend_origin:
+            normalized = self._normalize_origin(self.frontend_origin)
+            if normalized and normalized not in self.allowed_origins:
+                object.__setattr__(self, "allowed_origins", [*self.allowed_origins, normalized])
+        return self
 
     @field_validator("flight_providers", mode="before")
     @classmethod
@@ -111,6 +124,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        populate_by_name=True,
     )
 
 

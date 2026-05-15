@@ -11,6 +11,7 @@ SUPPORTED_LOCALES = {"es", "en"}
 
 MESSAGES: dict[AppLocale, dict[str, str]] = {
     "es": {
+        "error.internal_server_error": "Algo salió mal en el servidor. Revisá los logs del backend o probá de nuevo más tarde.",
         "error.search_not_found": "Búsqueda no encontrada.",
         "error.providers_unavailable": "No pudimos obtener opciones de vuelos en este momento. Inténtalo de nuevo en unos minutos.",
         "error.no_itineraries_found": "No encontramos itinerarios utilizables para esa búsqueda.",
@@ -81,6 +82,7 @@ MESSAGES: dict[AppLocale, dict[str, str]] = {
         "explainer.body": "{headline} {opportunity} En la práctica, {risk_note} El tradeoff principal es: {tradeoff}",
     },
     "en": {
+        "error.internal_server_error": "Something went wrong on the server. Check backend logs or try again later.",
         "error.search_not_found": "Search not found.",
         "error.providers_unavailable": "We couldn't fetch flight options right now. Please try again in a few minutes.",
         "error.no_itineraries_found": "We couldn't find usable itineraries for that search.",

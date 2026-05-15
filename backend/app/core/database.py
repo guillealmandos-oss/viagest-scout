@@ -38,11 +38,16 @@ def init_db() -> None:
 
 def _run_lightweight_migrations() -> None:
     inspector = inspect(engine)
-    if "searches" not in inspector.get_table_names():
-        return
+    dialect = engine.dialect.name
 
-    search_columns = {column["name"] for column in inspector.get_columns("searches")}
-    with engine.begin() as connection:
-        if "content_locale" not in search_columns:
-            connection.execute(text("ALTER TABLE searches ADD COLUMN content_locale VARCHAR(8)"))
-            connection.execute(text("UPDATE searches SET content_locale = 'es' WHERE content_locale IS NULL"))
+    if "searches" in inspector.get_table_names():
+        search_columns = {column["name"] for column in inspector.get_columns("searches")}
+        with engine.begin() as connection:
+            if "content_locale" not in search_columns:
+                connection.execute(text("ALTER TABLE searches ADD COLUMN content_locale VARCHAR(8)"))
+                connection.execute(text("UPDATE searches SET content_locale = 'es' WHERE content_locale IS NULL"))
+
+    # Postgres enforces VARCHAR length; guardamos itinerary.title aquí (suele ser >>32 chars).
+    if dialect == "postgresql" and "itineraries" in inspector.get_table_names():
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE itineraries ALTER COLUMN itinerary_type TYPE VARCHAR(512)"))

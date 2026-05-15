@@ -1,3 +1,6 @@
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,7 +12,16 @@ from app.core.database import init_db
 settings = get_settings()
 init_db()
 
-app = FastAPI(title=settings.app_name, version="0.1.0")
+_startup_logger = logging.getLogger("uvicorn.error")
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    _startup_logger.info("CORS allow_origins=%s", list(settings.allowed_origins))
+    yield
+
+
+app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,

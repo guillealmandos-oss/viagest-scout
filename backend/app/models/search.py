@@ -35,7 +35,7 @@ class ItineraryRecord(UuidMixin, TimestampMixin, Base):
 
     search_id: Mapped[str] = mapped_column(ForeignKey("searches.id", ondelete="CASCADE"))
     provider_offer_id: Mapped[str] = mapped_column(String(64))
-    itinerary_type: Mapped[str] = mapped_column(String(32))
+    itinerary_type: Mapped[str] = mapped_column(String(512))
     total_price: Mapped[float] = mapped_column(Float)
     currency: Mapped[str] = mapped_column(String(3))
     total_duration_minutes: Mapped[int] = mapped_column(Integer)
