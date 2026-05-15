@@ -82,6 +82,8 @@ def test_duffel_provider_maps_offer_to_internal_shape():
     assert len(mapped["segments"]) == 2
     assert mapped["segments"][0]["origin"] == "MVD"
     assert mapped["segments"][1]["destination"] == "NRT"
+    assert len(mapped["segments_by_slice"]) == 1
+    assert len(mapped["segments_by_slice"][0]) == 2
 
 
 def test_factory_returns_duffel_provider_when_selected(monkeypatch):

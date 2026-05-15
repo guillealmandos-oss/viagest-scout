@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 
 import { AppDictionary } from "@/i18n/dictionary";
 import { AppLocale } from "@/i18n/config";
@@ -25,6 +25,27 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
   const [isExpanded, setIsExpanded] = useState(strategy.is_recommended);
   const [hasTrackedOpen, setHasTrackedOpen] = useState(strategy.is_recommended);
   const [saveState, setSaveState] = useState<"idle" | "saved">("idle");
+
+  const slices = useMemo(() => {
+    const it = strategy.itinerary;
+    if (it.slices && it.slices.length > 0) {
+      return it.slices;
+    }
+    return [{ segments: it.segments, layovers: it.layovers ?? [] }];
+  }, [strategy.itinerary]);
+
+  function sliceHeading(sliceIndex: number, sliceCount: number): string {
+    if (sliceCount === 1) {
+      return "";
+    }
+    if (sliceIndex === 0) {
+      return copy.sections.sliceOutbound;
+    }
+    if (sliceIndex === 1 && sliceCount === 2) {
+      return copy.sections.sliceInbound;
+    }
+    return copy.sections.sliceOther.replace("{n}", String(sliceIndex + 1));
+  }
 
   const topScores = useMemo(
     () =>
@@ -161,15 +182,36 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
             />
             <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
               <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">{copy.sections.segments}</h3>
-              <div className="mt-4 grid gap-3">
-                {strategy.itinerary.segments.map((segment) => (
-                  <div key={`${segment.airline}-${segment.flight_number}-${segment.departure_at}`} className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                    <p className="text-sm font-semibold text-slate-950">
-                      {segment.origin} {"->"} {segment.destination}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      {segment.airline} {segment.flight_number} · {segment.cabin_class} · {formatMinutes(segment.duration_minutes, locale)}
-                    </p>
+              <div className="mt-4 grid gap-6">
+                {slices.map((slice, sliceIndex) => (
+                  <div key={`slice-${sliceIndex}`} className="grid gap-3">
+                    {slices.length > 1 ? (
+                      <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                        {sliceHeading(sliceIndex, slices.length)}
+                      </h4>
+                    ) : null}
+                    {slice.segments.map((segment, segIdx) => (
+                      <Fragment key={`${segment.airline}-${segment.flight_number}-${segment.departure_at}-${sliceIndex}-${segIdx}`}>
+                        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                          <p className="text-sm font-semibold text-slate-950">
+                            {segment.origin} {"->"} {segment.destination}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-600">
+                            {segment.airline} {segment.flight_number} · {segment.cabin_class} ·{" "}
+                            {formatMinutes(segment.duration_minutes, locale)}
+                          </p>
+                        </div>
+                        {segIdx < slice.layovers.length ? (
+                          <div className="ml-3 border-l-2 border-sky-200 pl-4 text-sm text-slate-600">
+                            <span className="font-medium text-slate-700">{copy.sections.connectionPrefix}</span>
+                            {" · "}
+                            {slice.layovers[segIdx].airport}
+                            {" · "}
+                            {formatMinutes(slice.layovers[segIdx].duration_minutes, locale)}
+                          </div>
+                        ) : null}
+                      </Fragment>
+                    ))}
                   </div>
                 ))}
               </div>

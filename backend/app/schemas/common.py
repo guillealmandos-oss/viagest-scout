@@ -85,6 +85,13 @@ class LayoverInfo(BaseModel):
     stopover_candidate: bool = False
 
 
+class FlightSlice(BaseModel):
+    """Una pierna del viaje (p. ej. ida o vuelta). Las escalas solo se calculan dentro de cada pierna."""
+
+    segments: list[FlightSegment]
+    layovers: list[LayoverInfo] = Field(default_factory=list)
+
+
 class RiskFlag(BaseModel):
     code: str
     severity: Literal["low", "medium", "high"]
@@ -108,6 +115,8 @@ class ItineraryOption(BaseModel):
     airlines: list[str]
     segments: list[FlightSegment]
     layovers: list[LayoverInfo]
+    """Escalas solo entre vuelos de la misma pierna (ida/vuelta por separado)."""
+    slices: list[FlightSlice] = Field(default_factory=list)
     raw_payload: dict
     score_breakdown: dict[str, float] = Field(default_factory=dict)
     risk_flags: list[RiskFlag] = Field(default_factory=list)

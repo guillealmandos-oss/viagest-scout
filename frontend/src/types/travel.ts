@@ -112,6 +112,7 @@ export interface Itinerary {
   airlines: string[];
   segments: Segment[];
   layovers: Layover[];
+  slices?: FlightSlice[];
   risk_flags: RiskFlag[];
   migration_notes: string[];
   opportunity_notes: string[];
@@ -133,6 +134,11 @@ export interface Layover {
   airport: string;
   duration_minutes: number;
   stopover_candidate: boolean;
+}
+
+export interface FlightSlice {
+  segments: Segment[];
+  layovers: Layover[];
 }
 
 export interface RiskFlag {

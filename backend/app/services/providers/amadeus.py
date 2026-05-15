@@ -56,22 +56,24 @@ class AmadeusFlightProvider(BaseFlightProvider):
         return response.json()["access_token"]
 
     def _map_offer(self, offer: dict) -> dict:
-        itineraries = offer.get("itineraries", [])
+        segments_by_slice: list[list[dict]] = []
         segments: list[dict] = []
-        for itinerary in itineraries:
+        for itinerary in offer.get("itineraries", []):
+            slice_segments: list[dict] = []
             for segment in itinerary.get("segments", []):
-                segments.append(
-                    {
-                        "origin": segment["departure"]["iataCode"],
-                        "destination": segment["arrival"]["iataCode"],
-                        "departure_at": segment["departure"]["at"],
-                        "arrival_at": segment["arrival"]["at"],
-                        "airline": segment["carrierCode"],
-                        "flight_number": segment["number"],
-                        "cabin_class": self._extract_cabin_class(offer, segment["id"]),
-                        "duration_minutes": self._parse_iso_duration(segment["duration"]),
-                    }
-                )
+                mapped = {
+                    "origin": segment["departure"]["iataCode"],
+                    "destination": segment["arrival"]["iataCode"],
+                    "departure_at": segment["departure"]["at"],
+                    "arrival_at": segment["arrival"]["at"],
+                    "airline": segment["carrierCode"],
+                    "flight_number": segment["number"],
+                    "cabin_class": self._extract_cabin_class(offer, segment["id"]),
+                    "duration_minutes": self._parse_iso_duration(segment["duration"]),
+                }
+                slice_segments.append(mapped)
+                segments.append(mapped)
+            segments_by_slice.append(slice_segments)
 
         baggage_included = self._extract_baggage_flag(offer)
         airline_codes = sorted({segment["airline"] for segment in segments})
@@ -91,6 +93,7 @@ class AmadeusFlightProvider(BaseFlightProvider):
             "flexibility_label": "Revisar reglas tarifarias",
             "flexibility_label_key": "provider.amadeus.flexibility.review",
             "self_transfer": False,
+            "segments_by_slice": segments_by_slice,
             "segments": segments,
             "cash_miles_hint": f"Revisar si {', '.join(airline_codes)} permite mejor valor en tramos largos.",
             "cash_miles_hint_key": "provider.amadeus.miles_hint",

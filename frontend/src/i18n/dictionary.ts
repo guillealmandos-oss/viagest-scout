@@ -111,6 +111,10 @@ export interface AppDictionary {
       operationalRisk: string;
       operationalRiskEmpty: string;
       segments: string;
+      sliceOutbound: string;
+      sliceInbound: string;
+      sliceOther: string;
+      connectionPrefix: string;
     };
     severityLabels: Record<"low" | "medium" | "high", string>;
   };
@@ -292,7 +296,7 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
       recommended: "Recomendada",
       metrics: {
         price: "Precio",
-        duration: "Duración",
+        duration: "Tiempo en ruta (ida+vuelta)",
         stops: "Escalas",
         flexibility: "Flexibilidad",
         score: "Score",
@@ -323,7 +327,11 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         migrationEmpty: "No se detectó una restricción migratoria dominante con las reglas soportadas.",
         operationalRisk: "Riesgo operativo",
         operationalRiskEmpty: "No se detectaron flags operativos fuertes en esta alternativa.",
-        segments: "Tramos",
+        segments: "Vuelos y conexiones",
+        sliceOutbound: "Ida",
+        sliceInbound: "Vuelta",
+        sliceOther: "Pierna {n}",
+        connectionPrefix: "Conexión",
       },
       severityLabels: {
         low: "Bajo",
@@ -507,7 +515,7 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
       recommended: "Recommended",
       metrics: {
         price: "Price",
-        duration: "Duration",
+        duration: "Flight time (out + return)",
         stops: "Stops",
         flexibility: "Flexibility",
         score: "Score",
@@ -538,7 +546,11 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         migrationEmpty: "No dominant migration constraint was detected with the supported rules.",
         operationalRisk: "Operational risk",
         operationalRiskEmpty: "No strong operational flags were detected in this option.",
-        segments: "Segments",
+        segments: "Flights & connections",
+        sliceOutbound: "Outbound",
+        sliceInbound: "Return",
+        sliceOther: "Leg {n}",
+        connectionPrefix: "Connection",
       },
       severityLabels: {
         low: "Low",

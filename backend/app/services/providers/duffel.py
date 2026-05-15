@@ -27,7 +27,7 @@ class DuffelFlightProvider(BaseFlightProvider):
         request_body = {
             "data": {
                 "cabin_class": self.CABIN_MAP.get(search_input.cabin_class, "economy"),
-                "max_connections": 1,
+                "max_connections": 2,
                 "slices": self._build_slices(search_input),
                 "passengers": [{"type": "adult"} for _ in range(search_input.passengers)],
             }
@@ -74,10 +74,12 @@ class DuffelFlightProvider(BaseFlightProvider):
         return slices
 
     def _map_offer(self, offer: dict) -> dict:
+        segments_by_slice: list[list[dict]] = []
         segments: list[dict] = []
         airlines: set[str] = set()
 
         for slice_payload in offer.get("slices", []):
+            slice_segments: list[dict] = []
             for segment in slice_payload.get("segments", []):
                 airline_code = (
                     segment.get("operating_carrier", {}).get("iata_code")
@@ -86,23 +88,30 @@ class DuffelFlightProvider(BaseFlightProvider):
                     or "ZZ"
                 )
                 airlines.add(airline_code)
-                segments.append(
-                    {
-                        "origin": self._airport_code(segment.get("origin")),
-                        "destination": self._airport_code(segment.get("destination")),
-                        "departure_at": segment.get("departing_at"),
-                        "arrival_at": segment.get("arriving_at"),
-                        "airline": airline_code,
-                        "flight_number": segment.get("marketing_carrier_flight_number")
-                        or segment.get("operating_carrier_flight_number")
-                        or segment.get("flight_number")
-                        or "N/A",
-                        "cabin_class": self._extract_cabin_class(offer),
-                        "duration_minutes": self._duration_minutes(segment),
-                    }
-                )
+                mapped = {
+                    "origin": self._airport_code(segment.get("origin")),
+                    "destination": self._airport_code(segment.get("destination")),
+                    "departure_at": segment.get("departing_at"),
+                    "arrival_at": segment.get("arriving_at"),
+                    "airline": airline_code,
+                    "flight_number": segment.get("marketing_carrier_flight_number")
+                    or segment.get("operating_carrier_flight_number")
+                    or segment.get("flight_number")
+                    or "N/A",
+                    "cabin_class": self._extract_cabin_class(offer),
+                    "duration_minutes": self._duration_minutes(segment),
+                }
+                slice_segments.append(mapped)
+                segments.append(mapped)
+            segments_by_slice.append(slice_segments)
 
-        route_label = f"{segments[0]['origin']}-{segments[-1]['destination']}" if segments else "Duffel"
+        route_label = "Duffel"
+        if segments_by_slice and segments_by_slice[0]:
+            first_slice = segments_by_slice[0]
+            route_label = f"{first_slice[0]['origin']}-{first_slice[-1]['destination']}"
+            if len(segments_by_slice) > 1 and segments_by_slice[1]:
+                rt = segments_by_slice[1]
+                route_label = f"{route_label}_{rt[0]['origin']}-{rt[-1]['destination']}"
         owner_name = offer.get("owner", {}).get("name", "Duffel")
 
         return {
@@ -121,6 +130,7 @@ class DuffelFlightProvider(BaseFlightProvider):
             "flexibility_label": self._build_flexibility_label(offer),
             "flexibility_code": self._build_flexibility_code(offer),
             "self_transfer": False,
+            "segments_by_slice": segments_by_slice,
             "segments": segments,
             "cash_miles_hint": self._build_miles_hint(sorted(airlines), offer),
             "cash_miles_hint_key": self._build_miles_hint_key(sorted(airlines)),

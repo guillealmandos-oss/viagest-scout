@@ -14,6 +14,75 @@ class DemoFlightProvider(BaseFlightProvider):
         outbound_date = search_input.departure_date
         return_date = search_input.return_date or search_input.departure_date + timedelta(days=10)
 
+        def merge_rt(**kwargs: object) -> tuple[list[dict], list[list[dict]]]:
+            out_segs, in_segs = self._round_trip_segments(**kwargs)
+            return out_segs + in_segs, [out_segs, in_segs]
+
+        sm_segs, sm_by = merge_rt(
+            outbound_date=outbound_date,
+            return_date=return_date,
+            outbound=[
+                self._segment(search_input.origin, "MAD", time(8, 10), 130, "IB", "6040"),
+                self._segment("MAD", search_input.destination, time(13, 15), 790, "IB", "6217"),
+            ],
+            inbound=[
+                self._segment(search_input.destination, "MAD", time(11, 5), 780, "IB", "6216"),
+                self._segment("MAD", search_input.origin, time(22, 25), 135, "IB", "6041"),
+            ],
+        )
+        lis_segs, lis_by = merge_rt(
+            outbound_date=outbound_date,
+            return_date=return_date,
+            outbound=[
+                self._segment(search_input.origin, "LIS", time(7, 45), 125, "TP", "118"),
+                self._segment("LIS", search_input.destination, time(13, 5), 840, "TP", "320"),
+            ],
+            inbound=[
+                self._segment(search_input.destination, "LIS", time(9, 25), 835, "TP", "319"),
+                self._segment("LIS", search_input.origin, time(19, 0), 125, "TP", "117"),
+            ],
+            outbound_layovers=[30 * 60],
+            inbound_layovers=[3 * 60 + 15],
+        )
+        ist_segs, ist_by = merge_rt(
+            outbound_date=outbound_date,
+            return_date=return_date,
+            outbound=[
+                self._segment(search_input.origin, "IST", time(6, 20), 1000, "TK", "16", cabin_class="ECONOMY"),
+                self._segment("IST", search_input.destination, time(1, 10), 610, "TK", "50", cabin_class="BUSINESS"),
+            ],
+            inbound=[
+                self._segment(search_input.destination, "IST", time(15, 45), 600, "TK", "51", cabin_class="BUSINESS"),
+                self._segment("IST", search_input.origin, time(23, 50), 995, "TK", "15", cabin_class="ECONOMY"),
+            ],
+            outbound_layovers=[2 * 60 + 10],
+            inbound_layovers=[4 * 60],
+        )
+        yyz_segs, yyz_by = merge_rt(
+            outbound_date=outbound_date,
+            return_date=return_date,
+            outbound=[
+                self._segment(search_input.origin, "YYZ", time(8, 55), 690, "AC", "883"),
+                self._segment("YYZ", search_input.destination, time(21, 10), 630, "WS", "12"),
+            ],
+            inbound=[
+                self._segment(search_input.destination, "YYZ", time(8, 0), 625, "WS", "11"),
+                self._segment("YYZ", search_input.origin, time(18, 20), 685, "AC", "882"),
+            ],
+            outbound_layovers=[55],
+            inbound_layovers=[70],
+        )
+        dir_segs, dir_by = merge_rt(
+            outbound_date=outbound_date,
+            return_date=return_date,
+            outbound=[
+                self._segment(search_input.origin, search_input.destination, time(9, 30), 860, "LA", "800"),
+            ],
+            inbound=[
+                self._segment(search_input.destination, search_input.origin, time(17, 45), 855, "LA", "801"),
+            ],
+        )
+
         return [
             self._build_offer(
                 offer_code="save-madrid",
@@ -23,18 +92,8 @@ class DemoFlightProvider(BaseFlightProvider):
                 baggage_included=True,
                 flexibility_code="semi",
                 self_transfer=False,
-                segments=self._round_trip_segments(
-                    outbound_date=outbound_date,
-                    return_date=return_date,
-                    outbound=[
-                        self._segment(search_input.origin, "MAD", time(8, 10), 130, "IB", "6040"),
-                        self._segment("MAD", search_input.destination, time(13, 15), 790, "IB", "6217"),
-                    ],
-                    inbound=[
-                        self._segment(search_input.destination, "MAD", time(11, 5), 780, "IB", "6216"),
-                        self._segment("MAD", search_input.origin, time(22, 25), 135, "IB", "6041"),
-                    ],
-                ),
+                segments=sm_segs,
+                segments_by_slice=sm_by,
                 cash_miles_hint="Guardar millas para un tramo largo da mejor valor.",
                 cash_miles_hint_key="provider.demo.hint.save_madrid",
             ),
@@ -46,20 +105,8 @@ class DemoFlightProvider(BaseFlightProvider):
                 baggage_included=True,
                 flexibility_code="total",
                 self_transfer=False,
-                segments=self._round_trip_segments(
-                    outbound_date=outbound_date,
-                    return_date=return_date,
-                    outbound=[
-                        self._segment(search_input.origin, "LIS", time(7, 45), 125, "TP", "118"),
-                        self._segment("LIS", search_input.destination, time(13, 5), 840, "TP", "320"),
-                    ],
-                    inbound=[
-                        self._segment(search_input.destination, "LIS", time(9, 25), 835, "TP", "319"),
-                        self._segment("LIS", search_input.origin, time(19, 0), 125, "TP", "117"),
-                    ],
-                    outbound_layovers=[30 * 60],
-                    inbound_layovers=[3 * 60 + 15],
-                ),
+                segments=lis_segs,
+                segments_by_slice=lis_by,
                 cash_miles_hint="El stopover agrega valor por un delta de costo bajo.",
                 cash_miles_hint_key="provider.demo.hint.stopover_lisbon",
             ),
@@ -71,20 +118,8 @@ class DemoFlightProvider(BaseFlightProvider):
                 baggage_included=True,
                 flexibility_code="total",
                 self_transfer=False,
-                segments=self._round_trip_segments(
-                    outbound_date=outbound_date,
-                    return_date=return_date,
-                    outbound=[
-                        self._segment(search_input.origin, "IST", time(6, 20), 1000, "TK", "16", cabin_class="ECONOMY"),
-                        self._segment("IST", search_input.destination, time(1, 10), 610, "TK", "50", cabin_class="BUSINESS"),
-                    ],
-                    inbound=[
-                        self._segment(search_input.destination, "IST", time(15, 45), 600, "TK", "51", cabin_class="BUSINESS"),
-                        self._segment("IST", search_input.origin, time(23, 50), 995, "TK", "15", cabin_class="ECONOMY"),
-                    ],
-                    outbound_layovers=[2 * 60 + 10],
-                    inbound_layovers=[4 * 60],
-                ),
+                segments=ist_segs,
+                segments_by_slice=ist_by,
                 cash_miles_hint="Tiene mejor valor por punto si canjeas solo la cabina premium.",
                 cash_miles_hint_key="provider.demo.hint.miles_istanbul",
             ),
@@ -96,20 +131,8 @@ class DemoFlightProvider(BaseFlightProvider):
                 baggage_included=False,
                 flexibility_code="basic",
                 self_transfer=True,
-                segments=self._round_trip_segments(
-                    outbound_date=outbound_date,
-                    return_date=return_date,
-                    outbound=[
-                        self._segment(search_input.origin, "YYZ", time(8, 55), 690, "AC", "883"),
-                        self._segment("YYZ", search_input.destination, time(21, 10), 630, "WS", "12"),
-                    ],
-                    inbound=[
-                        self._segment(search_input.destination, "YYZ", time(8, 0), 625, "WS", "11"),
-                        self._segment("YYZ", search_input.origin, time(18, 20), 685, "AC", "882"),
-                    ],
-                    outbound_layovers=[55],
-                    inbound_layovers=[70],
-                ),
+                segments=yyz_segs,
+                segments_by_slice=yyz_by,
                 cash_miles_hint="Solo conviene si aceptas visa y self-transfer.",
                 cash_miles_hint_key="provider.demo.hint.risk_toronto",
             ),
@@ -121,16 +144,8 @@ class DemoFlightProvider(BaseFlightProvider):
                 baggage_included=True,
                 flexibility_code="total",
                 self_transfer=False,
-                segments=self._round_trip_segments(
-                    outbound_date=outbound_date,
-                    return_date=return_date,
-                    outbound=[
-                        self._segment(search_input.origin, search_input.destination, time(9, 30), 860, "LA", "800"),
-                    ],
-                    inbound=[
-                        self._segment(search_input.destination, search_input.origin, time(17, 45), 855, "LA", "801"),
-                    ],
-                ),
+                segments=dir_segs,
+                segments_by_slice=dir_by,
                 cash_miles_hint="Conviene si priorizas tiempo total y cambios simples.",
                 cash_miles_hint_key="provider.demo.hint.comfort_direct",
             ),
@@ -145,10 +160,10 @@ class DemoFlightProvider(BaseFlightProvider):
         inbound: list[dict],
         outbound_layovers: list[int] | None = None,
         inbound_layovers: list[int] | None = None,
-    ) -> list[dict]:
+    ) -> tuple[list[dict], list[dict]]:
         outbound_segments = self._place_segments(outbound_date, outbound, outbound_layovers or [])
         inbound_segments = self._place_segments(return_date, inbound, inbound_layovers or [])
-        return outbound_segments + inbound_segments
+        return outbound_segments, inbound_segments
 
     def _place_segments(self, travel_date, segments: list[dict], layovers: list[int]) -> list[dict]:
         placed: list[dict] = []
@@ -203,6 +218,7 @@ class DemoFlightProvider(BaseFlightProvider):
         flexibility_code: str,
         self_transfer: bool,
         segments: list[dict],
+        segments_by_slice: list[list[dict]],
         cash_miles_hint: str,
         cash_miles_hint_key: str,
     ) -> dict:
@@ -224,6 +240,7 @@ class DemoFlightProvider(BaseFlightProvider):
             "flexibility_code": flexibility_code,
             "self_transfer": self_transfer,
             "segments": segments,
+            "segments_by_slice": segments_by_slice,
             "cash_miles_hint": cash_miles_hint,
             "cash_miles_hint_key": cash_miles_hint_key,
         }
