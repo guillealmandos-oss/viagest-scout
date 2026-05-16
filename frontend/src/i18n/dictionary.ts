@@ -80,6 +80,7 @@ export interface AppDictionary {
     adjustContext: string;
     assumptionsTitle: string;
     assumptionsEmpty: string;
+    testInventoryBanner: string;
     confidenceLabel: string;
     confidenceValues: Record<"low" | "medium" | "high", string>;
     scopeLabels: Record<string, string>;
@@ -298,6 +299,8 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
       adjustContext: "Ajustar contexto",
       assumptionsTitle: "Supuestos y cobertura",
       assumptionsEmpty: "No hizo falta declarar supuestos especiales para esta búsqueda.",
+      testInventoryBanner:
+        "Estás viendo inventario de prueba del proveedor: precios e itinerarios pueden ser ficticios (vuelos “directos” imposibles, mismo número en ida y vuelta). Para datos reales, configurá token live de Duffel/Amadeus en el backend.",
       confidenceLabel: "confianza",
       confidenceValues: {
         low: "baja",
@@ -536,6 +539,8 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
       adjustContext: "Adjust context",
       assumptionsTitle: "Assumptions and coverage",
       assumptionsEmpty: "No special assumptions were needed for this search.",
+      testInventoryBanner:
+        "You are viewing provider test inventory: fares and itineraries may be fictional (impossible “nonstop” legs, same flight number on outbound and return). For real data, configure a live Duffel/Amadeus token on the backend.",
       confidenceLabel: "confidence",
       confidenceValues: {
         low: "low",

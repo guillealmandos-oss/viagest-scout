@@ -22,6 +22,7 @@ from app.services.explainer import StrategyExplainer
 from app.services.migration_rules import MigrationRulesEngine
 from app.services.normalizer import FlightOfferNormalizer
 from app.services.offer_deduper import OfferDeduper
+from app.services.offer_quality import filter_test_inventory, is_implausible_itinerary, uses_test_flight_inventory
 from app.services.provider_health import ProviderHealthService
 from app.services.providers.base import BaseFlightProvider
 from app.services.providers.factory import get_flight_providers
@@ -63,6 +64,30 @@ class SearchOrchestrator:
             itineraries,
             provider_priority=fetch_result["providers_attempted"],
         )
+        assumptions: list[dict] = list(fetch_result["assumptions"])
+        if uses_test_flight_inventory():
+            assumptions.append(
+                {
+                    "scope": "provider",
+                    "rule": "test inventory",
+                    "rule_key": "provider.assumption.test_inventory.rule",
+                    "confidence": "high",
+                    "note": "sandbox",
+                    "note_key": "provider.assumption.test_inventory.note",
+                }
+            )
+            itineraries, removed_implausible = filter_test_inventory(itineraries)
+            if removed_implausible:
+                assumptions.append(
+                    {
+                        "scope": "provider",
+                        "rule": "filtered synthetic offers",
+                        "rule_key": "provider.assumption.test_inventory.rule",
+                        "confidence": "medium",
+                        "note": f"Se descartaron {removed_implausible} ofertas con itinerario no vendible (directo imposible o precio incoherente).",
+                        "note_key": "provider.assumption.test_inventory.note",
+                    }
+                )
         if not itineraries:
             self.provider_health.record_results(
                 db,
@@ -73,8 +98,15 @@ class SearchOrchestrator:
             raise UserFacingError("error.no_itineraries_found", status_code=502)
 
         cheapest_price = min(item.total_price for item in itineraries)
-        assumptions: list[dict] = list(fetch_result["assumptions"])
         for itinerary in itineraries:
+            if uses_test_flight_inventory() and is_implausible_itinerary(itinerary):
+                itinerary.risk_flags.append(
+                    RiskFlag(
+                        code="synthetic_inventory",
+                        severity="high",
+                        message_key="risk.synthetic_inventory",
+                    )
+                )
             migration = self.migration_engine.assess(itinerary, payload.traveler_profile)
             itinerary.risk_flags.extend(migration.risk_flags)
             itinerary.raw_payload["migration_note_items"] = migration.migration_note_items

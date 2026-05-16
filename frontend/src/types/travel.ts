@@ -77,6 +77,7 @@ export interface SearchResponse {
   assumptions: Array<{
     scope: string;
     rule: string;
+    rule_key?: string;
     confidence: string;
     note: string;
   }>;

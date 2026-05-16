@@ -31,6 +31,11 @@ MESSAGES: dict[AppLocale, dict[str, str]] = {
         "provider.assumption.active.note": "{provider} devolvió {offer_count} ofertas para esta búsqueda.",
         "provider.assumption.partial_failure.rule": "Falla parcial de proveedor",
         "provider.assumption.partial_failure.note": "Uno de los proveedores configurados no devolvió resultados para esta búsqueda.",
+        "provider.assumption.test_inventory.rule": "Inventario de prueba",
+        "provider.assumption.test_inventory.note":
+            "El backend usa credenciales de sandbox (Duffel test o Amadeus test). Precios e itinerarios pueden ser ficticios y no comparables con Skyscanner ni con la venta real.",
+        "risk.synthetic_inventory":
+            "Itinerario o precio poco creíble para esta ruta (típico del modo prueba). Usá el enlace externo o conectá proveedor live antes de decidir.",
         "provider.flexibility.total": "Flexible total",
         "provider.flexibility.semi": "Semi flexible",
         "provider.flexibility.partial_refund": "Reembolsable parcial",
@@ -103,6 +108,11 @@ MESSAGES: dict[AppLocale, dict[str, str]] = {
         "provider.assumption.active.note": "{provider} returned {offer_count} offers for this search.",
         "provider.assumption.partial_failure.rule": "Partial provider failure",
         "provider.assumption.partial_failure.note": "One of the configured providers did not return results for this search.",
+        "provider.assumption.test_inventory.rule": "Test inventory",
+        "provider.assumption.test_inventory.note":
+            "The backend is using sandbox credentials (Duffel test or Amadeus test). Fares and itineraries may be fictional and are not comparable to Skyscanner or real booking.",
+        "risk.synthetic_inventory":
+            "Itinerary or price is unlikely for this route (common in test mode). Use the external link or connect a live provider before deciding.",
         "provider.flexibility.total": "Fully flexible",
         "provider.flexibility.semi": "Semi flexible",
         "provider.flexibility.partial_refund": "Partially refundable",
