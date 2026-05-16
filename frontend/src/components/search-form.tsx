@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { createSearch } from "@/lib/api";
@@ -133,11 +133,7 @@ export function SearchForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fieldClassName = useMemo(
-    () =>
-      "mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-sky-400 focus:bg-white",
-    [],
-  );
+  const fieldClassName = "field-input mt-2";
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setFormState((current) => ({ ...current, [key]: value }));
@@ -167,38 +163,38 @@ export function SearchForm({
     >
       <form className="grid gap-6" onSubmit={handleSubmit}>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.origin}
             <input className={fieldClassName} value={formState.origin} onChange={(event) => update("origin", event.target.value)} maxLength={3} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.destination}
             <input className={fieldClassName} value={formState.destination} onChange={(event) => update("destination", event.target.value)} maxLength={3} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.departureDate}
             <input className={fieldClassName} type="date" value={formState.departureDate} onChange={(event) => update("departureDate", event.target.value)} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.returnDate}
             <input className={fieldClassName} type="date" value={formState.returnDate} onChange={(event) => update("returnDate", event.target.value)} />
           </label>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.flexibleDays}
             <input className={fieldClassName} type="number" min={0} max={14} value={formState.flexibleDays} onChange={(event) => update("flexibleDays", event.target.value)} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.budgetUsd}
             <input className={fieldClassName} type="number" min={0} value={formState.budgetUsd} onChange={(event) => update("budgetUsd", event.target.value)} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.passengers}
             <input className={fieldClassName} type="number" min={1} max={9} value={formState.passengers} onChange={(event) => update("passengers", event.target.value)} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.cabinClass}
             <select className={fieldClassName} value={formState.cabinClass} onChange={(event) => update("cabinClass", event.target.value as FormState["cabinClass"])}>
               <option value="ECONOMY">{copy.options.cabinClass.ECONOMY}</option>
@@ -210,15 +206,15 @@ export function SearchForm({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.nationality}
             <input className={fieldClassName} value={formState.nationality} onChange={(event) => update("nationality", event.target.value)} maxLength={2} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.residenceCountry}
             <input className={fieldClassName} value={formState.residenceCountry} onChange={(event) => update("residenceCountry", event.target.value)} maxLength={2} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.riskTolerance}
             <select className={fieldClassName} value={formState.riskTolerance} onChange={(event) => update("riskTolerance", event.target.value as FormState["riskTolerance"])}>
               <option value="low">{copy.options.riskTolerance.low}</option>
@@ -226,7 +222,7 @@ export function SearchForm({
               <option value="high">{copy.options.riskTolerance.high}</option>
             </select>
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.preferredStrategy}
             <select className={fieldClassName} value={formState.preferredStrategy} onChange={(event) => update("preferredStrategy", event.target.value as TravelPriority)}>
               <option value="savings">{copy.options.preferredStrategy.savings}</option>
@@ -239,39 +235,39 @@ export function SearchForm({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.validVisas}
             <input className={fieldClassName} value={formState.validVisas} onChange={(event) => update("validVisas", event.target.value)} placeholder={copy.placeholders.validVisas} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.maxStops}
             <input className={fieldClassName} type="number" min={0} max={4} value={formState.maxStops} onChange={(event) => update("maxStops", event.target.value)} />
           </label>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.loyaltyProgram}
             <input className={fieldClassName} value={formState.loyaltyProgram} onChange={(event) => update("loyaltyProgram", event.target.value)} placeholder={copy.placeholders.loyaltyProgram} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.loyaltyBalance}
             <input className={fieldClassName} type="number" min={0} value={formState.loyaltyBalance} onChange={(event) => update("loyaltyBalance", event.target.value)} />
           </label>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.loyaltyBank}
             <input className={fieldClassName} value={formState.loyaltyBank} onChange={(event) => update("loyaltyBank", event.target.value)} placeholder={copy.placeholders.loyaltyBank} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.transferPartners}
             <input className={fieldClassName} value={formState.transferPartners} onChange={(event) => update("transferPartners", event.target.value)} placeholder={copy.placeholders.transferPartners} />
           </label>
         </div>
 
-        <label className="text-sm font-medium text-slate-700">
+        <label className="field-label">
           {copy.fields.notes}
           <textarea
             className={`${fieldClassName} min-h-28 resize-y`}
@@ -281,7 +277,7 @@ export function SearchForm({
           />
         </label>
 
-        <div className="grid gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
+        <div className="panel-muted grid gap-3 p-4 md:grid-cols-2">
           <label className="flex items-start gap-3 text-sm text-slate-700">
             <input
               className="mt-1 size-4 rounded border-slate-300"
@@ -303,11 +299,11 @@ export function SearchForm({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.email}
             <input className={fieldClassName} type="email" value={formState.email} onChange={(event) => update("email", event.target.value)} />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="field-label">
             {copy.fields.displayName}
             <input className={fieldClassName} value={formState.displayName} onChange={(event) => update("displayName", event.target.value)} />
           </label>
@@ -320,7 +316,7 @@ export function SearchForm({
             {copy.footer}
           </p>
           <button
-            className="inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="btn-brand px-6 py-3 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isSubmitting}
             type="submit"
           >

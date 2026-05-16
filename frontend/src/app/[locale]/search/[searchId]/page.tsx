@@ -24,9 +24,22 @@ export default async function LocalizedSearchResultPage({
     notFound();
   }
 
+  const showTestInventoryBanner = result.assumptions.some(
+    (assumption) =>
+      assumption.rule_key === "provider.assumption.test_inventory.rule" ||
+      assumption.rule?.toLowerCase().includes("inventario de prueba") ||
+      assumption.rule?.toLowerCase().includes("test inventory"),
+  );
+
   return (
     <div className="space-y-8">
       <SearchTelemetry locale={locale} searchId={searchId} />
+
+      {showTestInventoryBanner ? (
+        <div className="alert-warning px-5 py-4 text-sm leading-6">
+          {copy.testInventoryBanner}
+        </div>
+      ) : null}
 
       <SectionCard
         eyebrow={`${copy.eyebrowPrefix} ${result.provider_name}`}
@@ -37,16 +50,10 @@ export default async function LocalizedSearchResultPage({
           <div className="space-y-4">
             <p className="text-base leading-8 text-slate-700">{result.summary}</p>
             <div className="flex flex-wrap gap-3">
-              <Link
-                className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-                href={`/${locale}`}
-              >
+              <Link className="btn-primary px-5 py-3" href={`/${locale}`}>
                 {copy.newSearch}
               </Link>
-              <Link
-                className="rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
-                href={`/${locale}`}
-              >
+              <Link className="btn-secondary px-5 py-3" href={`/${locale}`}>
                 {copy.adjustContext}
               </Link>
             </div>

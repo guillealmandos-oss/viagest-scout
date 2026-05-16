@@ -9,6 +9,7 @@ import { formatMinutes, postAnalyticsEvent } from "@/lib/api";
 import { googleFlightsSearchUrl, tripSearchParamsFromItinerary } from "@/lib/externalFlightSearch";
 import { formatScheduleLines } from "@/lib/flightTimes";
 import { formatSliceStopsSummary, isLongConnection } from "@/lib/itineraryDisplay";
+import { strategyTheme } from "@/lib/strategyTheme";
 import { Strategy } from "@/types/travel";
 
 interface StrategyCardProps {
@@ -18,14 +19,9 @@ interface StrategyCardProps {
   dictionary: AppDictionary;
 }
 
-const accentClasses: Record<Strategy["strategy_type"], string> = {
-  savings: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  experience: "border-sky-200 bg-sky-50 text-sky-700",
-  miles: "border-violet-200 bg-violet-50 text-violet-700",
-};
-
 export function StrategyCard({ searchId, strategy, locale, dictionary }: StrategyCardProps) {
   const copy = dictionary.strategyCard;
+  const theme = strategyTheme[strategy.strategy_type];
   const [isExpanded, setIsExpanded] = useState(strategy.is_recommended);
   const [hasTrackedOpen, setHasTrackedOpen] = useState(strategy.is_recommended);
   const [saveState, setSaveState] = useState<"idle" | "saved">("idle");
@@ -69,12 +65,15 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
     setIsExpanded(nextValue);
     if (nextValue && !hasTrackedOpen) {
       setHasTrackedOpen(true);
-      await postAnalyticsEvent({
-        event_name: "strategy_opened",
-        strategy_type: strategy.strategy_type,
-        search_id: searchId,
-        payload: { total_score: strategy.total_score },
-      }, locale).catch(() => null);
+      await postAnalyticsEvent(
+        {
+          event_name: "strategy_opened",
+          strategy_type: strategy.strategy_type,
+          search_id: searchId,
+          payload: { total_score: strategy.total_score },
+        },
+        locale,
+      ).catch(() => null);
     }
   }
 
@@ -89,221 +88,283 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
       }),
     );
     setSaveState("saved");
-    await postAnalyticsEvent({
-      event_name: "recommendation_saved",
-      strategy_type: strategy.strategy_type,
-      search_id: searchId,
-      payload: { route: strategy.itinerary.route_summary },
-    }, locale).catch(() => null);
+    await postAnalyticsEvent(
+      {
+        event_name: "recommendation_saved",
+        strategy_type: strategy.strategy_type,
+        search_id: searchId,
+        payload: { route: strategy.itinerary.route_summary },
+      },
+      locale,
+    ).catch(() => null);
   }
 
   return (
-    <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/50">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${accentClasses[strategy.strategy_type]}`}>
-              {strategy.title}
-            </span>
-            {strategy.is_recommended ? (
-              <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                {copy.recommended}
+    <article
+      className={`card relative overflow-hidden transition-shadow hover:shadow-md ${theme.borderClass}`}
+    >
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-32 opacity-80"
+        style={{ background: theme.muted }}
+      />
+
+      <div className="relative p-6 md:p-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex-1 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest ${theme.badgeClass}`}
+              >
+                {strategy.title}
               </span>
-            ) : null}
-          </div>
-          <div>
-            <h2 className="text-2xl font-semibold text-slate-950">{strategy.recommendation_badge}</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">{strategy.explanation}</p>
-          </div>
-        </div>
+              {strategy.is_recommended ? (
+                <span className="inline-flex items-center rounded-full bg-[var(--color-ink)] px-3 py-1 text-xs font-bold uppercase tracking-widest text-white">
+                  {copy.recommended}
+                </span>
+              ) : null}
+            </div>
 
-        <div className="grid min-w-64 gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{copy.metrics.price}</p>
-            <p className="mt-1 text-2xl font-semibold text-slate-950">
-              {strategy.itinerary.currency} {strategy.itinerary.total_price.toFixed(0)}
-            </p>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-[var(--color-text-primary)] md:text-2xl">
+                {strategy.recommendation_badge}
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--color-text-muted)]">
+                {strategy.explanation}
+              </p>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Metric label={copy.metrics.duration} value={formatMinutes(strategy.itinerary.total_duration_minutes, locale)} />
-            <Metric label={copy.metrics.stops} value={String(strategy.itinerary.stops_count)} />
-            <Metric label={copy.metrics.flexibility} value={strategy.itinerary.flexibility_label} />
-            <Metric label={copy.metrics.score} value={String(strategy.total_score)} />
-          </div>
-        </div>
-      </div>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {topScores.map(([label, score]) => (
-          <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              {copy.scoreLabels[label] ?? label}
-            </p>
-            <p className="mt-2 text-xl font-semibold text-slate-950">{score}</p>
-          </div>
-        ))}
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{copy.metrics.route}</p>
-          <p className="mt-2 text-sm font-medium text-slate-900">{strategy.itinerary.route_summary}</p>
-        </div>
-      </div>
-
-      <div className="mt-6 flex flex-col gap-3">
-        <div className="flex flex-wrap gap-3">
-          <button
-            className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
-            onClick={toggleExpanded}
-            type="button"
-          >
-            {isExpanded ? copy.actions.hideDetails : copy.actions.showDetails}
-          </button>
-          <button
-            className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-            onClick={saveRecommendation}
-            type="button"
-          >
-            {saveState === "saved" ? copy.actions.saved : copy.actions.save}
-          </button>
-          {googleFlightsUrl ? (
-            <a
-              className="inline-flex items-center rounded-full border border-sky-300 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-900 transition hover:border-sky-500 hover:bg-sky-100"
-              href={googleFlightsUrl}
-              onClick={() => {
-                void postAnalyticsEvent(
-                  {
-                    event_name: "external_flight_search_opened",
-                    strategy_type: strategy.strategy_type,
-                    search_id: searchId,
-                    payload: { provider: "google_flights" },
-                  },
-                  locale,
-                ).catch(() => null);
-              }}
-              rel="noopener noreferrer"
-              target="_blank"
+          <div className="shrink-0 lg:min-w-56 xl:min-w-64">
+            <div
+              className="rounded-2xl border p-5"
+              style={{ borderColor: theme.border, background: theme.muted }}
             >
-              {copy.externalSearch.openGoogleFlights}
-            </a>
-          ) : null}
-        </div>
-        {googleFlightsUrl ? (
-          <p className="max-w-2xl text-xs leading-relaxed text-slate-500">{copy.externalSearch.disclaimer}</p>
-        ) : null}
-      </div>
-
-      {isExpanded ? (
-        <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_0.9fr]">
-          <div className="space-y-5">
-            <DetailBlock title={copy.sections.tradeoffs} items={strategy.tradeoffs} emptyLabel={copy.sections.tradeoffsEmpty} />
-            <DetailBlock
-              title={copy.sections.opportunities}
-              items={strategy.opportunity_notes.length > 0 ? strategy.opportunity_notes : strategy.itinerary.opportunity_notes}
-              emptyLabel={copy.sections.opportunitiesEmpty}
-            />
-            <DetailBlock
-              title={copy.sections.migration}
-              items={strategy.itinerary.migration_notes}
-              emptyLabel={copy.sections.migrationEmpty}
-            />
-          </div>
-
-          <div className="space-y-5">
-            <DetailBlock
-              title={copy.sections.operationalRisk}
-              items={strategy.itinerary.risk_flags.map(
-                (flag) => `${copy.severityLabels[flag.severity]}: ${flag.message}`,
-              )}
-              emptyLabel={copy.sections.operationalRiskEmpty}
-            />
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">{copy.sections.segments}</h3>
-              <div className="mt-4 grid gap-6">
-                {slices.map((slice, sliceIndex) => (
-                  <div key={`slice-${sliceIndex}`} className="grid gap-3">
-                    {slices.length > 1 ? (
-                      <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        {sliceHeading(sliceIndex, slices.length)}
-                      </h4>
-                    ) : null}
-                    <p className="text-sm font-medium text-slate-700">
-                      {formatSliceStopsSummary(slice, locale, copy.sections)}
-                    </p>
-                    {slice.segments.map((segment, segIdx) => (
-                      <Fragment key={`${segment.airline}-${segment.flight_number}-${segment.departure_at}-${sliceIndex}-${segIdx}`}>
-                        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                          <p className="text-sm font-semibold text-slate-950">
-                            {segment.origin} {"->"} {segment.destination}
-                          </p>
-                          <p className="mt-1 text-sm text-slate-600">
-                            {formatAirlineWithCode(segment)} {segment.flight_number} · {segment.cabin_class} ·{" "}
-                            {formatMinutes(segment.duration_minutes, locale)}
-                          </p>
-                          {segment.operating_carrier_name ? (
-                            <p className="mt-1 text-xs text-slate-500">
-                              {copy.sections.operatedBy.replace("{carrier}", segment.operating_carrier_name)}
-                            </p>
-                          ) : null}
-                          <p className="mt-2 space-y-0.5 text-xs leading-5 text-slate-500">
-                            <SegmentTimesBlock
-                              copy={copy.segmentSchedule}
-                              iso={segment.departure_at}
-                              locale={locale}
-                              airportCode={segment.origin}
-                              variant="departure"
-                            />
-                            <SegmentTimesBlock
-                              copy={copy.segmentSchedule}
-                              iso={segment.arrival_at}
-                              locale={locale}
-                              airportCode={segment.destination}
-                              variant="arrival"
-                            />
-                          </p>
-                          {segment.technical_stops && segment.technical_stops.length > 0 ? (
-                            <ul className="mt-2 space-y-1 border-t border-slate-100 pt-2 text-xs text-slate-600">
-                              {segment.technical_stops.map((stop) => (
-                                <li key={`${segment.departure_at}-${stop.airport}`}>
-                                  <span className="font-medium text-slate-700">{copy.sections.technicalStopPrefix}</span>
-                                  {" · "}
-                                  {stop.airport}
-                                  {stop.duration_minutes > 0 ? (
-                                    <>
-                                      {" · "}
-                                      {formatMinutes(stop.duration_minutes, locale)}
-                                    </>
-                                  ) : null}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : null}
-                        </div>
-                        {segIdx < slice.layovers.length ? (
-                          <div className="ml-3 border-l-2 border-sky-200 pl-4 text-sm text-slate-600">
-                            <span className="font-medium text-slate-700">
-                              {segment.flight_number !== "N/A" &&
-                              slice.segments[segIdx + 1]?.flight_number === segment.flight_number
-                                ? copy.sections.technicalStopPrefix
-                                : copy.sections.connectionPrefix}
-                            </span>
-                            {" · "}
-                            {slice.layovers[segIdx].airport}
-                            {" · "}
-                            {formatMinutes(slice.layovers[segIdx].duration_minutes, locale)}
-                            {isLongConnection(slice.layovers[segIdx].duration_minutes)
-                              ? copy.sections.longConnectionNote
-                              : ""}
-                          </div>
-                        ) : null}
-                      </Fragment>
-                    ))}
-                  </div>
-                ))}
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-faint)]">
+                {copy.metrics.price}
+              </p>
+              <p
+                className="mt-1 text-4xl font-black tracking-tight"
+                style={{ color: theme.accent }}
+              >
+                {strategy.itinerary.currency} {strategy.itinerary.total_price.toFixed(0)}
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-[var(--color-border)]/60 pt-4">
+                <Metric
+                  label={copy.metrics.duration}
+                  value={formatMinutes(strategy.itinerary.total_duration_minutes, locale)}
+                />
+                <Metric label={copy.metrics.stops} value={String(strategy.itinerary.stops_count)} />
+                <Metric label={copy.metrics.flexibility} value={strategy.itinerary.flexibility_label} />
+                <Metric
+                  label={copy.metrics.score}
+                  value={String(strategy.total_score)}
+                  highlight
+                  accent={theme.accent}
+                />
               </div>
-              <p className="mt-4 text-xs leading-relaxed text-slate-500">{copy.segmentSchedule.utcFootnote}</p>
             </div>
           </div>
         </div>
-      ) : null}
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {topScores.map(([label, score]) => (
+            <ScoreBlock
+              key={label}
+              label={copy.scoreLabels[label] ?? label}
+              score={score}
+              accent={theme.accent}
+            />
+          ))}
+          <div className="panel-muted px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-faint)]">
+              {copy.metrics.route}
+            </p>
+            <p className="mt-2 text-xs font-medium leading-5 text-[var(--color-text-body)]">
+              {strategy.itinerary.route_summary}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button className="btn-secondary" onClick={toggleExpanded} type="button">
+              {isExpanded ? copy.actions.hideDetails : copy.actions.showDetails}
+            </button>
+            <button
+              className="btn-primary"
+              onClick={saveRecommendation}
+              type="button"
+              style={
+                saveState === "saved" ? { background: "var(--color-success)" } : undefined
+              }
+            >
+              {saveState === "saved" ? copy.actions.saved : copy.actions.save}
+            </button>
+            {googleFlightsUrl ? (
+              <a
+                className={`inline-flex items-center rounded-full border px-5 py-2.5 text-sm font-semibold transition hover:opacity-90 ${theme.badgeClass}`}
+                href={googleFlightsUrl}
+                onClick={() => {
+                  void postAnalyticsEvent(
+                    {
+                      event_name: "external_flight_search_opened",
+                      strategy_type: strategy.strategy_type,
+                      search_id: searchId,
+                      payload: { provider: "google_flights" },
+                    },
+                    locale,
+                  ).catch(() => null);
+                }}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {copy.externalSearch.openGoogleFlights}
+              </a>
+            ) : null}
+          </div>
+          {googleFlightsUrl ? (
+            <p className="max-w-2xl text-xs leading-relaxed text-[var(--color-text-faint)]">
+              {copy.externalSearch.disclaimer}
+            </p>
+          ) : null}
+        </div>
+
+        {isExpanded ? (
+          <div className="mt-8 border-t border-[var(--color-border)] pt-8">
+            <div className="grid gap-6 xl:grid-cols-2">
+              <div className="space-y-4">
+                <DetailBlock
+                  title={copy.sections.tradeoffs}
+                  items={strategy.tradeoffs}
+                  emptyLabel={copy.sections.tradeoffsEmpty}
+                />
+                <DetailBlock
+                  title={copy.sections.opportunities}
+                  items={
+                    strategy.opportunity_notes.length > 0
+                      ? strategy.opportunity_notes
+                      : strategy.itinerary.opportunity_notes
+                  }
+                  emptyLabel={copy.sections.opportunitiesEmpty}
+                />
+                <DetailBlock
+                  title={copy.sections.migration}
+                  items={strategy.itinerary.migration_notes}
+                  emptyLabel={copy.sections.migrationEmpty}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <DetailBlock
+                  title={copy.sections.operationalRisk}
+                  items={strategy.itinerary.risk_flags.map(
+                    (flag) => `${copy.severityLabels[flag.severity]}: ${flag.message}`,
+                  )}
+                  emptyLabel={copy.sections.operationalRiskEmpty}
+                />
+                <div className="panel-muted p-5">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+                    {copy.sections.segments}
+                  </h3>
+                  <div className="mt-4 grid gap-6">
+                    {slices.map((slice, sliceIndex) => (
+                      <div key={`slice-${sliceIndex}`} className="grid gap-3">
+                        {slices.length > 1 ? (
+                          <h4 className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-faint)]">
+                            {sliceHeading(sliceIndex, slices.length)}
+                          </h4>
+                        ) : null}
+                        <p className="text-sm font-medium text-[var(--color-text-body)]">
+                          {formatSliceStopsSummary(slice, locale, copy.sections)}
+                        </p>
+                        {slice.segments.map((segment, segIdx) => (
+                          <Fragment
+                            key={`${segment.airline}-${segment.flight_number}-${segment.departure_at}-${sliceIndex}-${segIdx}`}
+                          >
+                            <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <p className="text-sm font-bold text-[var(--color-text-primary)]">
+                                  {segment.origin} → {segment.destination}
+                                </p>
+                                <span className="text-xs text-[var(--color-text-faint)]">
+                                  {formatMinutes(segment.duration_minutes, locale)}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                                {formatAirlineWithCode(segment)} {segment.flight_number} ·{" "}
+                                {segment.cabin_class}
+                              </p>
+                              {segment.operating_carrier_name ? (
+                                <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                                  {copy.sections.operatedBy.replace(
+                                    "{carrier}",
+                                    segment.operating_carrier_name,
+                                  )}
+                                </p>
+                              ) : null}
+                              <p className="mt-2 space-y-0.5 text-xs leading-5 text-[var(--color-text-muted)]">
+                                <SegmentTimesBlock
+                                  copy={copy.segmentSchedule}
+                                  iso={segment.departure_at}
+                                  locale={locale}
+                                  airportCode={segment.origin}
+                                  variant="departure"
+                                />
+                                <SegmentTimesBlock
+                                  copy={copy.segmentSchedule}
+                                  iso={segment.arrival_at}
+                                  locale={locale}
+                                  airportCode={segment.destination}
+                                  variant="arrival"
+                                />
+                              </p>
+                              {segment.technical_stops && segment.technical_stops.length > 0 ? (
+                                <ul className="mt-2 space-y-1 border-t border-[var(--color-border)] pt-2 text-xs text-[var(--color-text-body)]">
+                                  {segment.technical_stops.map((stop) => (
+                                    <li key={`${segment.departure_at}-${stop.airport}`}>
+                                      <span className="font-medium text-[var(--color-text-body)]">
+                                        {copy.sections.technicalStopPrefix}
+                                      </span>
+                                      {" · "}
+                                      {stop.airport}
+                                      {stop.duration_minutes > 0 ? (
+                                        <>
+                                          {" · "}
+                                          {formatMinutes(stop.duration_minutes, locale)}
+                                        </>
+                                      ) : null}
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : null}
+                            </div>
+                            {segIdx < slice.layovers.length ? (
+                              <LayoverRow
+                                airport={slice.layovers[segIdx].airport}
+                                copy={copy}
+                                durationMinutes={slice.layovers[segIdx].duration_minutes}
+                                isTechnical={
+                                  segment.flight_number !== "N/A" &&
+                                  slice.segments[segIdx + 1]?.flight_number === segment.flight_number
+                                }
+                                locale={locale}
+                                themeBorder={theme.border}
+                              />
+                            ) : null}
+                          </Fragment>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-4 text-xs leading-relaxed text-[var(--color-text-faint)]">
+                    {copy.segmentSchedule.utcFootnote}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
     </article>
   );
 }
@@ -333,28 +394,73 @@ function SegmentTimesBlock({
       <span className="block">
         {localText ? (
           <>
-            <span className="font-medium text-slate-600">{localLabel}:</span> {localText}
+            <span className="font-medium text-[var(--color-text-body)]">{localLabel}:</span>{" "}
+            {localText}
           </>
         ) : (
           <>
-            <span className="font-medium text-slate-600">{utcOnlyLabel}:</span> {utcText}
+            <span className="font-medium text-[var(--color-text-body)]">{utcOnlyLabel}:</span>{" "}
+            {utcText}
           </>
         )}
       </span>
       {localText ? (
-        <span className="block text-slate-400">
-          <span className="font-medium text-slate-500">{copy.utcReferenceLabel}:</span> {utcText}
+        <span className="block text-[var(--color-text-faint)]">
+          <span className="font-medium">{copy.utcReferenceLabel}:</span> {utcText}
         </span>
       ) : null}
     </>
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({
+  label,
+  value,
+  highlight = false,
+  accent,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+  accent?: string;
+}) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
+      <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-faint)]">
+        {label}
+      </p>
+      <p
+        className="mt-0.5 text-sm font-bold"
+        style={highlight && accent ? { color: accent } : { color: "var(--color-text-primary)" }}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ScoreBlock({
+  label,
+  score,
+  accent,
+}: {
+  label: string;
+  score: number;
+  accent: string;
+}) {
+  const pct = Math.min(100, Math.max(0, score));
+  return (
+    <div className="panel-muted px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-faint)]">
+        {label}
+      </p>
+      <p className="mt-1 text-2xl font-black text-[var(--color-text-primary)]">{score}</p>
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-border)]">
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${pct}%`, background: accent }}
+        />
+      </div>
     </div>
   );
 }
@@ -369,21 +475,58 @@ function DetailBlock({
   emptyLabel: string;
 }) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">{title}</h3>
-      <ul className="mt-4 grid gap-3">
+    <div className="panel-muted p-5">
+      <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+        {title}
+      </h3>
+      <ul className="mt-3 space-y-2">
         {items.length > 0 ? (
           items.map((item) => (
-            <li key={item} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-700">
+            <li
+              key={item}
+              className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm leading-6 text-[var(--color-text-body)]"
+            >
               {item}
             </li>
           ))
         ) : (
-          <li className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-500">
+          <li className="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text-faint)]">
             {emptyLabel}
           </li>
         )}
       </ul>
+    </div>
+  );
+}
+
+function LayoverRow({
+  airport,
+  copy,
+  durationMinutes,
+  isTechnical,
+  locale,
+  themeBorder,
+}: {
+  airport: string;
+  copy: AppDictionary["strategyCard"];
+  durationMinutes: number;
+  isTechnical: boolean;
+  locale: AppLocale;
+  themeBorder: string;
+}) {
+  return (
+    <div
+      className="ml-3 border-l-2 pl-4 text-sm text-[var(--color-text-body)]"
+      style={{ borderColor: themeBorder }}
+    >
+      <span className="font-medium text-[var(--color-text-primary)]">
+        {isTechnical ? copy.sections.technicalStopPrefix : copy.sections.connectionPrefix}
+      </span>
+      {" · "}
+      {airport}
+      {" · "}
+      {formatMinutes(durationMinutes, locale)}
+      {isLongConnection(durationMinutes) ? copy.sections.longConnectionNote : ""}
     </div>
   );
 }

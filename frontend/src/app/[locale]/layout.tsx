@@ -29,15 +29,13 @@ export default async function LocaleLayout({
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-      <header className="mb-8 flex flex-col gap-4 rounded-[2rem] border border-slate-200 bg-white px-6 py-5 shadow-sm shadow-slate-200/60 sm:flex-row sm:items-end sm:justify-between">
+      <header className="card mb-8 flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600">
-            {dictionary.header.eyebrow}
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+          <p className="eyebrow">{dictionary.header.eyebrow}</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]">
             {dictionary.header.title}
           </h1>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
+          <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--color-text-muted)]">
             {dictionary.header.description}
           </p>
         </div>
