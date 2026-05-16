@@ -17,6 +17,7 @@ class AnalyticsSummary(BaseModel):
     feedback_submissions: int
     strategy_open_events: int
     recent_feedback: list[dict]
+    recent_provider_issues: list[dict] = Field(default_factory=list)
 
 
 class ProviderHealthItem(BaseModel):

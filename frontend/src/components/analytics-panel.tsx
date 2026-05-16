@@ -62,6 +62,24 @@ export async function AnalyticsPanel({
         </div>
       </div>
 
+      {summary.recent_provider_issues.length > 0 ? (
+        <div className="mt-6 space-y-3">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+            {copy.recentProviderIssuesTitle}
+          </h3>
+          <div className="grid gap-3">
+            {summary.recent_provider_issues.map((item) => (
+              <article
+                key={`provider-${item.search_id}-${item.created_at}`}
+                className="alert-warning px-4 py-3 text-sm leading-6"
+              >
+                <p>{item.text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="mt-6 space-y-3">
         <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
           {copy.providerHealthTitle}

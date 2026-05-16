@@ -160,6 +160,8 @@ export interface AppDictionary {
     };
     recentFeedbackTitle: string;
     recentFeedbackEmpty: string;
+    recentProviderIssuesTitle: string;
+    recentProviderIssuesEmpty: string;
     providerHealthTitle: string;
     providerHealthEmpty: string;
     lastStatusPrefix: string;
@@ -402,6 +404,8 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
       },
       recentFeedbackTitle: "Feedback reciente",
       recentFeedbackEmpty: "Todavía no hay feedback capturado. La app ya expone el endpoint para comenzar una beta cerrada.",
+      recentProviderIssuesTitle: "Errores recientes de búsqueda",
+      recentProviderIssuesEmpty: "Sin fallos recientes de proveedores.",
       providerHealthTitle: "Salud de proveedores",
       providerHealthEmpty: "Todavía no hay suficientes eventos de proveedores para mostrar salud agregada.",
       lastStatusPrefix: "último estado:",
@@ -642,6 +646,8 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
       },
       recentFeedbackTitle: "Recent feedback",
       recentFeedbackEmpty: "No feedback has been captured yet. The app already exposes the endpoint to start a closed beta.",
+      recentProviderIssuesTitle: "Recent search errors",
+      recentProviderIssuesEmpty: "No recent provider failures.",
       providerHealthTitle: "Provider health",
       providerHealthEmpty: "There are not enough provider events yet to show aggregated health.",
       lastStatusPrefix: "last status:",

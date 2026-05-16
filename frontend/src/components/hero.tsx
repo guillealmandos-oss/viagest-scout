@@ -6,7 +6,6 @@ export function Hero({ dictionary }: { dictionary: AppDictionary }) {
   return (
     <section className="card-raised grid gap-10 px-8 py-10 lg:grid-cols-[1.2fr_0.8fr] lg:px-12">
       <div className="space-y-6">
-        <p className="eyebrow">{hero.eyebrow}</p>
         <div className="space-y-4">
           <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-balance text-[var(--color-text-primary)] sm:text-5xl">
             {hero.title}

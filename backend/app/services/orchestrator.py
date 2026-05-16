@@ -273,9 +273,22 @@ class SearchOrchestrator:
 
         recent_feedback_records = db.scalars(
             select(FeedbackEvent)
-            .where(FeedbackEvent.free_text.is_not(None))
+            .where(
+                FeedbackEvent.event_name == "feedback_submitted",
+                FeedbackEvent.free_text.is_not(None),
+            )
             .order_by(FeedbackEvent.created_at.desc())
             .limit(5)
+        ).all()
+
+        recent_provider_issue_records = db.scalars(
+            select(FeedbackEvent)
+            .where(
+                FeedbackEvent.event_name == "provider_search_result",
+                FeedbackEvent.free_text.is_not(None),
+            )
+            .order_by(FeedbackEvent.created_at.desc())
+            .limit(3)
         ).all()
 
         return AnalyticsSummary(
@@ -292,6 +305,15 @@ class SearchOrchestrator:
                     "created_at": record.created_at.isoformat(),
                 }
                 for record in recent_feedback_records
+            ],
+            recent_provider_issues=[
+                {
+                    "event_name": record.event_name,
+                    "search_id": record.search_id,
+                    "text": record.free_text,
+                    "created_at": record.created_at.isoformat(),
+                }
+                for record in recent_provider_issue_records
             ],
         )
 

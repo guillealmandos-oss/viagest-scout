@@ -50,6 +50,12 @@ export interface AnalyticsSummary {
     text: string;
     created_at: string;
   }>;
+  recent_provider_issues: Array<{
+    event_name: string;
+    search_id: string;
+    text: string;
+    created_at: string;
+  }>;
 }
 
 export interface ProviderHealthSummary {
