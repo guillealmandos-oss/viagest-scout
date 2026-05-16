@@ -35,7 +35,7 @@ export default async function RootLayout({
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-slate-100 text-slate-950">
+      <body className="min-h-full bg-[var(--color-canvas)] text-[var(--color-text-primary)]">
         {children}
       </body>
     </html>

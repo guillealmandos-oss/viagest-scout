@@ -5,6 +5,7 @@ export type StrategyType = Strategy["strategy_type"];
 export interface StrategyThemeTokens {
   borderClass: string;
   badgeClass: string;
+  scoreFillClass: string;
   accent: string;
   muted: string;
   border: string;
@@ -15,7 +16,8 @@ export const strategyTheme: Record<StrategyType, StrategyThemeTokens> = {
   savings: {
     borderClass: "strategy-savings",
     badgeClass: "badge-savings",
-    accent: "var(--strategy-savings-accent)",
+    scoreFillClass: "score-fill-savings",
+    accent: "var(--strategy-savings-text)",
     muted: "var(--strategy-savings-muted)",
     border: "var(--strategy-savings-border)",
     text: "var(--strategy-savings-text)",
@@ -23,7 +25,8 @@ export const strategyTheme: Record<StrategyType, StrategyThemeTokens> = {
   experience: {
     borderClass: "strategy-experience",
     badgeClass: "badge-experience",
-    accent: "var(--strategy-experience-accent)",
+    scoreFillClass: "score-fill-experience",
+    accent: "var(--strategy-experience-text)",
     muted: "var(--strategy-experience-muted)",
     border: "var(--strategy-experience-border)",
     text: "var(--strategy-experience-text)",
@@ -31,7 +34,8 @@ export const strategyTheme: Record<StrategyType, StrategyThemeTokens> = {
   miles: {
     borderClass: "strategy-miles",
     badgeClass: "badge-miles",
-    accent: "var(--strategy-miles-accent)",
+    scoreFillClass: "score-fill-miles",
+    accent: "var(--strategy-miles-text)",
     muted: "var(--strategy-miles-muted)",
     border: "var(--strategy-miles-border)",
     text: "var(--strategy-miles-text)",

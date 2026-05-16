@@ -48,7 +48,7 @@ export default async function LocalizedSearchResultPage({
       >
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-4">
-            <p className="text-base leading-8 text-slate-700">{result.summary}</p>
+            <p className="text-base leading-8 text-[var(--color-text-body)]">{result.summary}</p>
             <div className="flex flex-wrap gap-3">
               <Link className="btn-primary px-5 py-3" href={`/${locale}`}>
                 {copy.newSearch}
@@ -59,8 +59,8 @@ export default async function LocalizedSearchResultPage({
             </div>
           </div>
 
-          <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <div className="panel-muted p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
               {copy.assumptionsTitle}
             </h2>
             <div className="mt-4 grid gap-3">
@@ -68,11 +68,11 @@ export default async function LocalizedSearchResultPage({
                 result.assumptions.map((assumption) => (
                   <article
                     key={`${assumption.scope}-${assumption.rule}`}
-                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3"
+                    className="stat-tile-inner px-4 py-3"
                   >
-                    <p className="text-sm font-semibold text-slate-900">{assumption.rule}</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">{assumption.note}</p>
-                    <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-400">
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)]">{assumption.rule}</p>
+                    <p className="mt-1 text-sm leading-6 text-[var(--color-text-body)]">{assumption.note}</p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[var(--color-text-faint)]">
                       {copy.scopeLabels[assumption.scope] ?? assumption.scope} · {copy.confidenceLabel}{" "}
                       {copy.confidenceValues[assumption.confidence as keyof typeof copy.confidenceValues] ??
                         assumption.confidence}
@@ -80,7 +80,7 @@ export default async function LocalizedSearchResultPage({
                   </article>
                 ))
               ) : (
-                <p className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+                <p className="rounded-2xl border border-dashed border-[var(--color-border-strong)] px-4 py-3 text-sm text-[var(--color-text-faint)]">
                   {copy.assumptionsEmpty}
                 </p>
               )}

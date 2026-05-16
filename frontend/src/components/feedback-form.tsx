@@ -47,15 +47,15 @@ export function FeedbackForm({
     >
       <form className="grid gap-4" onSubmit={handleSubmit}>
         <textarea
-          className="min-h-32 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white"
+          className="field-textarea"
           onChange={(event) => setFeedback(event.target.value)}
           placeholder={copy.placeholder}
           value={feedback}
         />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-slate-500">{copy.footer}</p>
+          <p className="text-sm text-[var(--color-text-muted)]">{copy.footer}</p>
           <button
-            className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="btn-primary px-5 py-3 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={status === "submitting"}
             type="submit"
           >

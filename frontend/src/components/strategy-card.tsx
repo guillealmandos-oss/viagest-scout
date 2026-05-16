@@ -101,26 +101,15 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
 
   return (
     <article
-      className={`card relative overflow-hidden transition-shadow hover:shadow-md ${theme.borderClass}`}
+      className={`card overflow-hidden ${theme.borderClass}`}
     >
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-32 opacity-80"
-        style={{ background: theme.muted }}
-      />
-
-      <div className="relative p-6 md:p-8">
+      <div className="p-6 md:p-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex-1 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest ${theme.badgeClass}`}
-              >
-                {strategy.title}
-              </span>
+              <span className={`badge ${theme.badgeClass}`}>{strategy.title}</span>
               {strategy.is_recommended ? (
-                <span className="inline-flex items-center rounded-full bg-[var(--color-ink)] px-3 py-1 text-xs font-bold uppercase tracking-widest text-white">
-                  {copy.recommended}
-                </span>
+                <span className="badge badge-gold">{copy.recommended}</span>
               ) : null}
             </div>
 
@@ -135,10 +124,7 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
           </div>
 
           <div className="shrink-0 lg:min-w-56 xl:min-w-64">
-            <div
-              className="rounded-2xl border p-5"
-              style={{ borderColor: theme.border, background: theme.muted }}
-            >
+            <div className="panel-muted rounded-2xl p-5">
               <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-faint)]">
                 {copy.metrics.price}
               </p>
@@ -172,7 +158,7 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
               key={label}
               label={copy.scoreLabels[label] ?? label}
               score={score}
-              accent={theme.accent}
+              scoreFillClass={theme.scoreFillClass}
             />
           ))}
           <div className="panel-muted px-4 py-3">
@@ -202,7 +188,7 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
             </button>
             {googleFlightsUrl ? (
               <a
-                className={`inline-flex items-center rounded-full border px-5 py-2.5 text-sm font-semibold transition hover:opacity-90 ${theme.badgeClass}`}
+                className="btn-outline-gold"
                 href={googleFlightsUrl}
                 onClick={() => {
                   void postAnalyticsEvent(
@@ -281,7 +267,7 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
                           <Fragment
                             key={`${segment.airline}-${segment.flight_number}-${segment.departure_at}-${sliceIndex}-${segIdx}`}
                           >
-                            <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
+                            <div className="stat-tile-inner px-4 py-3">
                               <div className="flex items-center justify-between gap-3">
                                 <p className="text-sm font-bold text-[var(--color-text-primary)]">
                                   {segment.origin} → {segment.destination}
@@ -442,11 +428,11 @@ function Metric({
 function ScoreBlock({
   label,
   score,
-  accent,
+  scoreFillClass,
 }: {
   label: string;
   score: number;
-  accent: string;
+  scoreFillClass: string;
 }) {
   const pct = Math.min(100, Math.max(0, score));
   return (
@@ -455,11 +441,8 @@ function ScoreBlock({
         {label}
       </p>
       <p className="mt-1 text-2xl font-black text-[var(--color-text-primary)]">{score}</p>
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-border)]">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${pct}%`, background: accent }}
-        />
+      <div className="score-bar">
+        <div className={scoreFillClass} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -484,13 +467,13 @@ function DetailBlock({
           items.map((item) => (
             <li
               key={item}
-              className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm leading-6 text-[var(--color-text-body)]"
+              className="stat-tile-inner px-4 py-2.5 text-sm leading-6 text-[var(--color-text-body)]"
             >
               {item}
             </li>
           ))
         ) : (
-          <li className="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text-faint)]">
+          <li className="rounded-lg border border-dashed border-[var(--color-border-strong)] px-4 py-2.5 text-sm text-[var(--color-text-faint)]">
             {emptyLabel}
           </li>
         )}

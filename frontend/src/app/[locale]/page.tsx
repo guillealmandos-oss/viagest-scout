@@ -22,9 +22,9 @@ export default async function LocalizedHome({
       <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
         <SearchForm dictionary={dictionary} locale={locale} />
         <SectionCard eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
-          <ul className="grid gap-3 text-sm leading-6 text-slate-700">
+          <ul className="grid gap-3 text-sm leading-6 text-[var(--color-text-body)]">
             {copy.items.map((item) => (
-              <li key={item} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <li key={item} className="stat-tile-inner px-4 py-3">
                 {item}
               </li>
             ))}

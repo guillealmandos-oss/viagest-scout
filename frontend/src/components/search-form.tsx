@@ -278,18 +278,18 @@ export function SearchForm({
         </label>
 
         <div className="panel-muted grid gap-3 p-4 md:grid-cols-2">
-          <label className="flex items-start gap-3 text-sm text-slate-700">
+          <label className="flex items-start gap-3 text-sm text-[var(--color-text-body)]">
             <input
-              className="mt-1 size-4 rounded border-slate-300"
+              className="mt-1 size-4 rounded border-[var(--color-border-strong)] accent-[var(--color-gold)]"
               type="checkbox"
               checked={formState.checkedBagRequired}
               onChange={(event) => update("checkedBagRequired", event.target.checked)}
             />
             {copy.toggles.checkedBagRequired}
           </label>
-          <label className="flex items-start gap-3 text-sm text-slate-700">
+          <label className="flex items-start gap-3 text-sm text-[var(--color-text-body)]">
             <input
-              className="mt-1 size-4 rounded border-slate-300"
+              className="mt-1 size-4 rounded border-[var(--color-border-strong)] accent-[var(--color-gold)]"
               type="checkbox"
               checked={formState.stopoverInterest}
               onChange={(event) => update("stopoverInterest", event.target.checked)}
@@ -312,7 +312,7 @@ export function SearchForm({
         {error ? <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="max-w-2xl text-sm leading-6 text-slate-600">
+          <p className="max-w-2xl text-sm leading-6 text-[var(--color-text-muted)]">
             {copy.footer}
           </p>
           <button
