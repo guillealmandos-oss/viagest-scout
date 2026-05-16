@@ -134,9 +134,16 @@ class DuffelFlightProvider(BaseFlightProvider):
         )
         if is_placeholder_airline_code(airline_code):
             airline_code = owner_carrier.get("iata_code") or airline_code
-        airline_name_raw = (
-            marketing.get("name") or operating.get("name") or owner_carrier.get("name") or ""
-        ).strip()
+        marketing_name = (marketing.get("name") or "").strip()
+        operating_name = (operating.get("name") or "").strip()
+        airline_name_raw = marketing_name or operating_name or (owner_carrier.get("name") or "").strip()
+        operating_carrier_name: str | None = None
+        marketing_code = (marketing.get("iata_code") or "").strip().upper()
+        operating_code = (operating.get("iata_code") or "").strip().upper()
+        if operating_name and operating_name != airline_name_raw:
+            operating_carrier_name = operating_name
+        elif operating_code and marketing_code and operating_code != marketing_code:
+            operating_carrier_name = operating_name or operating_code
         return {
             "origin": self._airport_code(segment.get("origin")),
             "destination": self._airport_code(segment.get("destination")),
@@ -144,6 +151,7 @@ class DuffelFlightProvider(BaseFlightProvider):
             "arrival_at": segment.get("arriving_at"),
             "airline": airline_code,
             "airline_name": airline_name_raw or None,
+            "operating_carrier_name": operating_carrier_name,
             "flight_number": segment.get("marketing_carrier_flight_number")
             or segment.get("operating_carrier_flight_number")
             or segment.get("flight_number")

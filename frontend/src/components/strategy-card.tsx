@@ -8,6 +8,7 @@ import { formatAirlineWithCode } from "@/lib/airlines";
 import { formatMinutes, postAnalyticsEvent } from "@/lib/api";
 import { googleFlightsSearchUrl, tripSearchParamsFromItinerary } from "@/lib/externalFlightSearch";
 import { formatScheduleLines } from "@/lib/flightTimes";
+import { formatSliceStopsSummary, isLongConnection } from "@/lib/itineraryDisplay";
 import { Strategy } from "@/types/travel";
 
 interface StrategyCardProps {
@@ -224,6 +225,9 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
                         {sliceHeading(sliceIndex, slices.length)}
                       </h4>
                     ) : null}
+                    <p className="text-sm font-medium text-slate-700">
+                      {formatSliceStopsSummary(slice, locale, copy.sections)}
+                    </p>
                     {slice.segments.map((segment, segIdx) => (
                       <Fragment key={`${segment.airline}-${segment.flight_number}-${segment.departure_at}-${sliceIndex}-${segIdx}`}>
                         <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
@@ -234,6 +238,11 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
                             {formatAirlineWithCode(segment)} {segment.flight_number} · {segment.cabin_class} ·{" "}
                             {formatMinutes(segment.duration_minutes, locale)}
                           </p>
+                          {segment.operating_carrier_name ? (
+                            <p className="mt-1 text-xs text-slate-500">
+                              {copy.sections.operatedBy.replace("{carrier}", segment.operating_carrier_name)}
+                            </p>
+                          ) : null}
                           <p className="mt-2 space-y-0.5 text-xs leading-5 text-slate-500">
                             <SegmentTimesBlock
                               copy={copy.segmentSchedule}
@@ -280,6 +289,9 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
                             {slice.layovers[segIdx].airport}
                             {" · "}
                             {formatMinutes(slice.layovers[segIdx].duration_minutes, locale)}
+                            {isLongConnection(slice.layovers[segIdx].duration_minutes)
+                              ? copy.sections.longConnectionNote
+                              : ""}
                           </div>
                         ) : null}
                       </Fragment>

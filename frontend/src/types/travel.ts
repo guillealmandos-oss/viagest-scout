@@ -131,6 +131,7 @@ export interface Segment {
   arrival_at: string;
   airline: string;
   airline_name?: string | null;
+  operating_carrier_name?: string | null;
   flight_number: string;
   cabin_class: string;
   duration_minutes: number;

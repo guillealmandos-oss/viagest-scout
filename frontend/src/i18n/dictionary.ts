@@ -120,6 +120,10 @@ export interface AppDictionary {
       sliceOther: string;
       connectionPrefix: string;
       technicalStopPrefix: string;
+      sliceSummaryDirect: string;
+      sliceSummaryWithStops: string;
+      operatedBy: string;
+      longConnectionNote: string;
     };
     segmentSchedule: {
       departLocalLabel: string;
@@ -351,6 +355,10 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         sliceOther: "Pierna {n}",
         connectionPrefix: "Conexión",
         technicalStopPrefix: "Escala",
+        sliceSummaryDirect: "{duration} · directo",
+        sliceSummaryWithStops: "{duration} · {count} escalas · {airports}",
+        operatedBy: "Operado por {carrier}",
+        longConnectionNote: " · conexión larga",
       },
       segmentSchedule: {
         departLocalLabel: "Salida · hora local en {code}",
@@ -585,6 +593,10 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         sliceOther: "Leg {n}",
         connectionPrefix: "Connection",
         technicalStopPrefix: "Stop",
+        sliceSummaryDirect: "{duration} · nonstop",
+        sliceSummaryWithStops: "{duration} · {count} stops · {airports}",
+        operatedBy: "Operated by {carrier}",
+        longConnectionNote: " · long connection",
       },
       segmentSchedule: {
         departLocalLabel: "Departure · local time at {code}",

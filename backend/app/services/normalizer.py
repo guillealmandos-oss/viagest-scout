@@ -72,6 +72,7 @@ class FlightOfferNormalizer:
             arrival_at=raw_segment["arrival_at"],
             airline=raw_segment["airline"],
             airline_name=raw_segment.get("airline_name"),
+            operating_carrier_name=raw_segment.get("operating_carrier_name"),
             flight_number=raw_segment["flight_number"],
             cabin_class=raw_segment["cabin_class"],
             duration_minutes=int(raw_segment["duration_minutes"]),
