@@ -77,10 +77,10 @@ MESSAGES: dict[AppLocale, dict[str, str]] = {
         "explainer.headline.savings": "Esta opción prioriza costo total y mantiene la complejidad en un nivel razonable.",
         "explainer.headline.experience": "Esta opción busca sumar valor al viaje sin convertirlo en una operación complicada.",
         "explainer.headline.miles": "Esta opción reserva el mayor valor para tramos donde las millas pueden rendir mejor.",
-        "explainer.risk_watch": "Debes vigilar {risk}.",
-        "explainer.risk_none": "No aparece un riesgo operativo dominante dentro del set.",
+        "explainer.risk_inline": "Riesgo principal: {risk}.",
+        "explainer.risk_none": "No aparece un riesgo operativo dominante en esta opción.",
         "explainer.tradeoff_default": "No domina en todas las variables a la vez.",
-        "explainer.body": "{headline} {opportunity} En la práctica, {risk_note} El tradeoff principal es: {tradeoff}",
+        "explainer.body": "{headline} {opportunity} {risk_note} El tradeoff principal es: {tradeoff}",
     },
     "en": {
         "error.internal_server_error": "Something went wrong on the server. Check backend logs or try again later.",
@@ -149,10 +149,10 @@ MESSAGES: dict[AppLocale, dict[str, str]] = {
         "explainer.headline.savings": "This option prioritizes total cost while keeping complexity at a reasonable level.",
         "explainer.headline.experience": "This option aims to add value to the trip without turning it into a complicated operation.",
         "explainer.headline.miles": "This option preserves the strongest value for segments where miles can perform better.",
-        "explainer.risk_watch": "You should watch {risk}.",
-        "explainer.risk_none": "There is no dominant operational risk within the set.",
+        "explainer.risk_inline": "Main risk: {risk}.",
+        "explainer.risk_none": "There is no dominant operational risk in this option.",
         "explainer.tradeoff_default": "It does not dominate every variable at once.",
-        "explainer.body": "{headline} {opportunity} In practice, {risk_note} The main tradeoff is: {tradeoff}",
+        "explainer.body": "{headline} {opportunity} {risk_note} The main tradeoff is: {tradeoff}",
     },
 }
 

@@ -153,7 +153,11 @@ class StrategyExplainer:
         localized_tradeoffs = render_message_items(locale, list(tradeoffs), fallback=list(tradeoffs))
         localized_opportunities = render_message_items(locale, list(opportunity_notes), fallback=list(opportunity_notes))
         risk_note = (
-            t(locale, "explainer.risk_watch", risk=self._localize_risk_flag(locale, itinerary.risk_flags[0]).lower())
+            t(
+                locale,
+                "explainer.risk_inline",
+                risk=self._localize_risk_flag(locale, itinerary.risk_flags[0]),
+            )
             if itinerary.risk_flags
             else t(locale, "explainer.risk_none")
         )

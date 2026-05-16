@@ -4,7 +4,10 @@ import { Fragment, useMemo, useState } from "react";
 
 import { AppDictionary } from "@/i18n/dictionary";
 import { AppLocale } from "@/i18n/config";
-import { formatFlightDatetimeUtc, formatMinutes, postAnalyticsEvent } from "@/lib/api";
+import { formatAirlineWithCode } from "@/lib/airlines";
+import { formatMinutes, postAnalyticsEvent } from "@/lib/api";
+import { googleFlightsSearchUrl, tripSearchParamsFromItinerary } from "@/lib/externalFlightSearch";
+import { formatScheduleLines } from "@/lib/flightTimes";
 import { Strategy } from "@/types/travel";
 
 interface StrategyCardProps {
@@ -33,6 +36,11 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
     }
     return [{ segments: it.segments, layovers: it.layovers ?? [] }];
   }, [strategy.itinerary]);
+
+  const googleFlightsUrl = useMemo(() => {
+    const p = tripSearchParamsFromItinerary(strategy.itinerary);
+    return p ? googleFlightsSearchUrl(p, locale) : null;
+  }, [strategy.itinerary, locale]);
 
   function sliceHeading(sliceIndex: number, sliceCount: number): string {
     if (sliceCount === 1) {
@@ -139,21 +147,47 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <button
-          className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
-          onClick={toggleExpanded}
-          type="button"
-        >
-          {isExpanded ? copy.actions.hideDetails : copy.actions.showDetails}
-        </button>
-        <button
-          className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-          onClick={saveRecommendation}
-          type="button"
-        >
-          {saveState === "saved" ? copy.actions.saved : copy.actions.save}
-        </button>
+      <div className="mt-6 flex flex-col gap-3">
+        <div className="flex flex-wrap gap-3">
+          <button
+            className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
+            onClick={toggleExpanded}
+            type="button"
+          >
+            {isExpanded ? copy.actions.hideDetails : copy.actions.showDetails}
+          </button>
+          <button
+            className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+            onClick={saveRecommendation}
+            type="button"
+          >
+            {saveState === "saved" ? copy.actions.saved : copy.actions.save}
+          </button>
+          {googleFlightsUrl ? (
+            <a
+              className="inline-flex items-center rounded-full border border-sky-300 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-900 transition hover:border-sky-500 hover:bg-sky-100"
+              href={googleFlightsUrl}
+              onClick={() => {
+                void postAnalyticsEvent(
+                  {
+                    event_name: "external_flight_search_opened",
+                    strategy_type: strategy.strategy_type,
+                    search_id: searchId,
+                    payload: { provider: "google_flights" },
+                  },
+                  locale,
+                ).catch(() => null);
+              }}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              {copy.externalSearch.openGoogleFlights}
+            </a>
+          ) : null}
+        </div>
+        {googleFlightsUrl ? (
+          <p className="max-w-2xl text-xs leading-relaxed text-slate-500">{copy.externalSearch.disclaimer}</p>
+        ) : null}
       </div>
 
       {isExpanded ? (
@@ -197,18 +231,24 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
                             {segment.origin} {"->"} {segment.destination}
                           </p>
                           <p className="mt-1 text-sm text-slate-600">
-                            {segment.airline} {segment.flight_number} · {segment.cabin_class} ·{" "}
+                            {formatAirlineWithCode(segment)} {segment.flight_number} · {segment.cabin_class} ·{" "}
                             {formatMinutes(segment.duration_minutes, locale)}
                           </p>
                           <p className="mt-2 space-y-0.5 text-xs leading-5 text-slate-500">
-                            <span className="block">
-                              <span className="font-medium text-slate-600">{copy.segmentSchedule.departUtc}:</span>{" "}
-                              {formatFlightDatetimeUtc(segment.departure_at, locale)}
-                            </span>
-                            <span className="block">
-                              <span className="font-medium text-slate-600">{copy.segmentSchedule.arriveUtc}:</span>{" "}
-                              {formatFlightDatetimeUtc(segment.arrival_at, locale)}
-                            </span>
+                            <SegmentTimesBlock
+                              copy={copy.segmentSchedule}
+                              iso={segment.departure_at}
+                              locale={locale}
+                              airportCode={segment.origin}
+                              variant="departure"
+                            />
+                            <SegmentTimesBlock
+                              copy={copy.segmentSchedule}
+                              iso={segment.arrival_at}
+                              locale={locale}
+                              airportCode={segment.destination}
+                              variant="arrival"
+                            />
                           </p>
                         </div>
                         {segIdx < slice.layovers.length ? (
@@ -231,6 +271,48 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
         </div>
       ) : null}
     </article>
+  );
+}
+
+function SegmentTimesBlock({
+  copy,
+  iso,
+  locale,
+  airportCode,
+  variant,
+}: {
+  copy: AppDictionary["strategyCard"]["segmentSchedule"];
+  iso: string;
+  locale: AppLocale;
+  airportCode: string;
+  variant: "departure" | "arrival";
+}) {
+  const { localText, utcText } = formatScheduleLines(iso, locale, airportCode);
+  const localLabel =
+    variant === "departure"
+      ? copy.departLocalLabel.replace("{code}", airportCode)
+      : copy.arriveLocalLabel.replace("{code}", airportCode);
+  const utcOnlyLabel = variant === "departure" ? copy.departUtc : copy.arriveUtc;
+
+  return (
+    <>
+      <span className="block">
+        {localText ? (
+          <>
+            <span className="font-medium text-slate-600">{localLabel}:</span> {localText}
+          </>
+        ) : (
+          <>
+            <span className="font-medium text-slate-600">{utcOnlyLabel}:</span> {utcText}
+          </>
+        )}
+      </span>
+      {localText ? (
+        <span className="block text-slate-400">
+          <span className="font-medium text-slate-500">{copy.utcReferenceLabel}:</span> {utcText}
+        </span>
+      ) : null}
+    </>
   );
 }
 

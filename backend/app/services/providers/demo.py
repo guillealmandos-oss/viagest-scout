@@ -10,6 +10,15 @@ from app.services.providers.base import BaseFlightProvider
 class DemoFlightProvider(BaseFlightProvider):
     provider_name = "demo"
 
+    _AIRLINE_DISPLAY: dict[str, str] = {
+        "IB": "Iberia",
+        "TP": "TAP Air Portugal",
+        "TK": "Turkish Airlines",
+        "AC": "Air Canada",
+        "WS": "WestJet",
+        "LA": "LATAM Airlines",
+    }
+
     async def search_offers(self, search_input: SearchRequestInput) -> list[dict]:
         outbound_date = search_input.departure_date
         return_date = search_input.return_date or search_input.departure_date + timedelta(days=10)
@@ -203,6 +212,7 @@ class DemoFlightProvider(BaseFlightProvider):
             "departure_time": departure_time,
             "duration_minutes": duration_minutes,
             "airline": airline,
+            "airline_name": self._AIRLINE_DISPLAY.get(airline),
             "flight_number": flight_number,
             "cabin_class": cabin_class,
         }

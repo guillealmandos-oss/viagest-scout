@@ -39,7 +39,8 @@ class AmadeusFlightProvider(BaseFlightProvider):
             self.capture_response_metadata(response)
             response.raise_for_status()
             payload = response.json()
-        return [self._map_offer(offer) for offer in payload.get("data", [])]
+        carriers = payload.get("dictionaries", {}).get("carriers", {})
+        return [self._map_offer(offer, carriers) for offer in payload.get("data", [])]
 
     async def _get_access_token(self, client: httpx.AsyncClient) -> str:
         response = await client.post(
@@ -55,18 +56,25 @@ class AmadeusFlightProvider(BaseFlightProvider):
         response.raise_for_status()
         return response.json()["access_token"]
 
-    def _map_offer(self, offer: dict) -> dict:
+    def _map_offer(self, offer: dict, carriers: dict[str, str] | None = None) -> dict:
+        carriers = carriers or {}
         segments_by_slice: list[list[dict]] = []
         segments: list[dict] = []
         for itinerary in offer.get("itineraries", []):
             slice_segments: list[dict] = []
             for segment in itinerary.get("segments", []):
+                airline_code = segment["carrierCode"]
+                airline_title = carriers.get(airline_code)
+                airline_name = airline_title.strip() if isinstance(airline_title, str) else None
+                if airline_name == "":
+                    airline_name = None
                 mapped = {
                     "origin": segment["departure"]["iataCode"],
                     "destination": segment["arrival"]["iataCode"],
                     "departure_at": segment["departure"]["at"],
                     "arrival_at": segment["arrival"]["at"],
-                    "airline": segment["carrierCode"],
+                    "airline": airline_code,
+                    "airline_name": airline_name,
                     "flight_number": segment["number"],
                     "cabin_class": self._extract_cabin_class(offer, segment["id"]),
                     "duration_minutes": self._parse_iso_duration(segment["duration"]),

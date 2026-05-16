@@ -125,6 +125,7 @@ export interface Segment {
   departure_at: string;
   arrival_at: string;
   airline: string;
+  airline_name?: string | null;
   flight_number: string;
   cabin_class: string;
   duration_minutes: number;

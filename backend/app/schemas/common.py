@@ -74,6 +74,7 @@ class FlightSegment(BaseModel):
     departure_at: str
     arrival_at: str
     airline: str
+    airline_name: str | None = None
     flight_number: str
     cabin_class: CabinClass
     duration_minutes: int

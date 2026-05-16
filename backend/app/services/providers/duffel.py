@@ -5,6 +5,7 @@ from datetime import datetime
 
 import httpx
 
+from app.core.airline_codes import filter_airline_codes, is_placeholder_airline_code
 from app.schemas.common import SearchRequestInput
 from app.services.providers.base import BaseFlightProvider
 
@@ -81,19 +82,30 @@ class DuffelFlightProvider(BaseFlightProvider):
         for slice_payload in offer.get("slices", []):
             slice_segments: list[dict] = []
             for segment in slice_payload.get("segments", []):
+                marketing = segment.get("marketing_carrier") or {}
+                operating = segment.get("operating_carrier") or {}
+                owner_carrier = offer.get("owner") or {}
                 airline_code = (
-                    segment.get("operating_carrier", {}).get("iata_code")
-                    or segment.get("marketing_carrier", {}).get("iata_code")
-                    or offer.get("owner", {}).get("iata_code")
+                    marketing.get("iata_code")
+                    or operating.get("iata_code")
+                    or owner_carrier.get("iata_code")
                     or "ZZ"
                 )
-                airlines.add(airline_code)
+                if is_placeholder_airline_code(airline_code):
+                    airline_code = owner_carrier.get("iata_code") or airline_code
+                airline_name_raw = (
+                    marketing.get("name") or operating.get("name") or owner_carrier.get("name") or ""
+                ).strip()
+                airline_name = airline_name_raw or None
+                if not is_placeholder_airline_code(airline_code):
+                    airlines.add(airline_code)
                 mapped = {
                     "origin": self._airport_code(segment.get("origin")),
                     "destination": self._airport_code(segment.get("destination")),
                     "departure_at": segment.get("departing_at"),
                     "arrival_at": segment.get("arriving_at"),
                     "airline": airline_code,
+                    "airline_name": airline_name,
                     "flight_number": segment.get("marketing_carrier_flight_number")
                     or segment.get("operating_carrier_flight_number")
                     or segment.get("flight_number")
@@ -132,9 +144,9 @@ class DuffelFlightProvider(BaseFlightProvider):
             "self_transfer": False,
             "segments_by_slice": segments_by_slice,
             "segments": segments,
-            "cash_miles_hint": self._build_miles_hint(sorted(airlines), offer),
-            "cash_miles_hint_key": self._build_miles_hint_key(sorted(airlines)),
-            "cash_miles_hint_params": self._build_miles_hint_params(sorted(airlines), offer),
+            "cash_miles_hint": self._build_miles_hint(filter_airline_codes(airlines), offer),
+            "cash_miles_hint_key": self._build_miles_hint_key(filter_airline_codes(airlines)),
+            "cash_miles_hint_params": self._build_miles_hint_params(filter_airline_codes(airlines), offer),
         }
 
     def _airport_code(self, airport_payload: dict | None) -> str:
@@ -196,11 +208,13 @@ class DuffelFlightProvider(BaseFlightProvider):
         return "provider.duffel.miles_hint.owner"
 
     def _build_miles_hint_params(self, airlines: list[str], offer: dict) -> dict[str, str]:
-        owner = offer.get("owner", {}).get("name", "la aerolinea")
-        return {
-            "airlines": ", ".join(airlines),
-            "owner": owner,
-        }
+        owner = offer.get("owner", {}).get("name", "la aerolínea")
+        if airlines:
+            return {
+                "airlines": ", ".join(airlines),
+                "owner": owner,
+            }
+        return {"owner": owner}
 
     def _duration_minutes(self, segment: dict) -> int:
         if segment.get("duration"):

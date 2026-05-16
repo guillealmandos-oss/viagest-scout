@@ -101,6 +101,10 @@ export interface AppDictionary {
       save: string;
       saved: string;
     };
+    externalSearch: {
+      openGoogleFlights: string;
+      disclaimer: string;
+    };
     sections: {
       tradeoffs: string;
       tradeoffsEmpty: string;
@@ -117,6 +121,9 @@ export interface AppDictionary {
       connectionPrefix: string;
     };
     segmentSchedule: {
+      departLocalLabel: string;
+      arriveLocalLabel: string;
+      utcReferenceLabel: string;
       departUtc: string;
       arriveUtc: string;
       utcFootnote: string;
@@ -323,6 +330,11 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         save: "Guardar estrategia",
         saved: "Guardada",
       },
+      externalSearch: {
+        openGoogleFlights: "Buscar ruta en Google Flights",
+        disclaimer:
+          "Enlace externo solo para orientarte: no reproducimos la misma tarifa ni la disponibilidad del proveedor de esta estrategia.",
+      },
       sections: {
         tradeoffs: "Tradeoffs",
         tradeoffsEmpty: "No hay tradeoffs relevantes detectados.",
@@ -339,10 +351,13 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         connectionPrefix: "Conexión",
       },
       segmentSchedule: {
+        departLocalLabel: "Salida · hora local en {code}",
+        arriveLocalLabel: "Llegada · hora local en {code}",
+        utcReferenceLabel: "UTC",
         departUtc: "Salida (UTC)",
         arriveUtc: "Llegada (UTC)",
         utcFootnote:
-          "Horarios en tiempo universal coordinado (UTC), como suelen enviar los proveedores. La hora local en cada aeropuerto puede diferir.",
+          "La hora local usa la zona horaria del aeropuerto (catálogo IATA→IANA). Debajo se muestra UTC como referencia fija. Si no hay zona para ese código IATA, solo verás la línea en UTC.",
       },
       severityLabels: {
         low: "Bajo",
@@ -548,6 +563,11 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         save: "Save strategy",
         saved: "Saved",
       },
+      externalSearch: {
+        openGoogleFlights: "Search route on Google Flights",
+        disclaimer:
+          "External link for reference only: it does not reproduce this strategy's fare or availability from our flight provider.",
+      },
       sections: {
         tradeoffs: "Tradeoffs",
         tradeoffsEmpty: "No meaningful tradeoffs were detected.",
@@ -564,10 +584,13 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         connectionPrefix: "Connection",
       },
       segmentSchedule: {
+        departLocalLabel: "Departure · local time at {code}",
+        arriveLocalLabel: "Arrival · local time at {code}",
+        utcReferenceLabel: "UTC",
         departUtc: "Departure (UTC)",
         arriveUtc: "Arrival (UTC)",
         utcFootnote:
-          "Times are shown in coordinated universal time (UTC), as providers typically return. Local time at each airport may differ.",
+          "Local time uses the airport time zone (IATA→IANA catalog). UTC is shown below as a fixed reference. If there is no zone for that IATA code, only the UTC line appears.",
       },
       severityLabels: {
         low: "Low",
