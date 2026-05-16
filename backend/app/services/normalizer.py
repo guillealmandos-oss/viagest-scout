@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from app.core.i18n import AppLocale, t
-from app.schemas.common import FlightSegment, FlightSlice, ItineraryOption, LayoverInfo
+from app.schemas.common import FlightSegment, FlightSlice, ItineraryOption, LayoverInfo, SegmentTechnicalStop
 
 
 class FlightOfferNormalizer:
@@ -29,7 +29,10 @@ class FlightOfferNormalizer:
             all_segments = [segment for slice_segs in slice_segment_models for segment in slice_segs]
             route_summary = self._build_route_summary_slices(slice_segment_models, locale)
             total_duration = sum(self._get_total_duration_minutes(slice_segs) for slice_segs in slice_segment_models)
-            stops_count = sum(max(len(slice_segs) - 1, 0) for slice_segs in slice_segment_models)
+            stops_count = sum(
+                max(len(slice_segs) - 1, 0) + sum(len(seg.technical_stops) for seg in slice_segs)
+                for slice_segs in slice_segment_models
+            )
 
             normalized.append(
                 ItineraryOption(
@@ -54,6 +57,14 @@ class FlightOfferNormalizer:
         return normalized
 
     def _build_segment(self, raw_segment: dict) -> FlightSegment:
+        technical_stops = [
+            SegmentTechnicalStop(
+                airport=stop["airport"],
+                duration_minutes=int(stop.get("duration_minutes") or 0),
+            )
+            for stop in raw_segment.get("technical_stops") or []
+            if stop.get("airport")
+        ]
         return FlightSegment(
             origin=raw_segment["origin"],
             destination=raw_segment["destination"],
@@ -64,6 +75,7 @@ class FlightOfferNormalizer:
             flight_number=raw_segment["flight_number"],
             cabin_class=raw_segment["cabin_class"],
             duration_minutes=int(raw_segment["duration_minutes"]),
+            technical_stops=technical_stops,
         )
 
     def _build_layovers(self, segments: list[FlightSegment]) -> list[LayoverInfo]:

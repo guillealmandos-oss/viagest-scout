@@ -250,10 +250,32 @@ export function StrategyCard({ searchId, strategy, locale, dictionary }: Strateg
                               variant="arrival"
                             />
                           </p>
+                          {segment.technical_stops && segment.technical_stops.length > 0 ? (
+                            <ul className="mt-2 space-y-1 border-t border-slate-100 pt-2 text-xs text-slate-600">
+                              {segment.technical_stops.map((stop) => (
+                                <li key={`${segment.departure_at}-${stop.airport}`}>
+                                  <span className="font-medium text-slate-700">{copy.sections.technicalStopPrefix}</span>
+                                  {" · "}
+                                  {stop.airport}
+                                  {stop.duration_minutes > 0 ? (
+                                    <>
+                                      {" · "}
+                                      {formatMinutes(stop.duration_minutes, locale)}
+                                    </>
+                                  ) : null}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
                         </div>
                         {segIdx < slice.layovers.length ? (
                           <div className="ml-3 border-l-2 border-sky-200 pl-4 text-sm text-slate-600">
-                            <span className="font-medium text-slate-700">{copy.sections.connectionPrefix}</span>
+                            <span className="font-medium text-slate-700">
+                              {segment.flight_number !== "N/A" &&
+                              slice.segments[segIdx + 1]?.flight_number === segment.flight_number
+                                ? copy.sections.technicalStopPrefix
+                                : copy.sections.connectionPrefix}
+                            </span>
                             {" · "}
                             {slice.layovers[segIdx].airport}
                             {" · "}

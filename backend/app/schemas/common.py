@@ -68,6 +68,13 @@ class SearchCreateRequest(BaseModel):
     search: SearchRequestInput
 
 
+class SegmentTechnicalStop(BaseModel):
+    """Escala en el mismo vuelo (mismo número), cuando el proveedor no parte el segmento."""
+
+    airport: str
+    duration_minutes: int = 0
+
+
 class FlightSegment(BaseModel):
     origin: str
     destination: str
@@ -78,6 +85,7 @@ class FlightSegment(BaseModel):
     flight_number: str
     cabin_class: CabinClass
     duration_minutes: int
+    technical_stops: list[SegmentTechnicalStop] = Field(default_factory=list)
 
 
 class LayoverInfo(BaseModel):

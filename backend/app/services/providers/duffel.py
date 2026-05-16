@@ -82,39 +82,12 @@ class DuffelFlightProvider(BaseFlightProvider):
         for slice_payload in offer.get("slices", []):
             slice_segments: list[dict] = []
             for segment in slice_payload.get("segments", []):
-                marketing = segment.get("marketing_carrier") or {}
-                operating = segment.get("operating_carrier") or {}
-                owner_carrier = offer.get("owner") or {}
-                airline_code = (
-                    marketing.get("iata_code")
-                    or operating.get("iata_code")
-                    or owner_carrier.get("iata_code")
-                    or "ZZ"
-                )
-                if is_placeholder_airline_code(airline_code):
-                    airline_code = owner_carrier.get("iata_code") or airline_code
-                airline_name_raw = (
-                    marketing.get("name") or operating.get("name") or owner_carrier.get("name") or ""
-                ).strip()
-                airline_name = airline_name_raw or None
-                if not is_placeholder_airline_code(airline_code):
-                    airlines.add(airline_code)
-                mapped = {
-                    "origin": self._airport_code(segment.get("origin")),
-                    "destination": self._airport_code(segment.get("destination")),
-                    "departure_at": segment.get("departing_at"),
-                    "arrival_at": segment.get("arriving_at"),
-                    "airline": airline_code,
-                    "airline_name": airline_name,
-                    "flight_number": segment.get("marketing_carrier_flight_number")
-                    or segment.get("operating_carrier_flight_number")
-                    or segment.get("flight_number")
-                    or "N/A",
-                    "cabin_class": self._extract_cabin_class(offer),
-                    "duration_minutes": self._duration_minutes(segment),
-                }
-                slice_segments.append(mapped)
-                segments.append(mapped)
+                base = self._map_segment(segment, offer)
+                for leg in self._expand_segment_with_stops(segment, base):
+                    if not is_placeholder_airline_code(leg["airline"]):
+                        airlines.add(leg["airline"])
+                    slice_segments.append(leg)
+                    segments.append(leg)
             segments_by_slice.append(slice_segments)
 
         route_label = "Duffel"
@@ -148,6 +121,97 @@ class DuffelFlightProvider(BaseFlightProvider):
             "cash_miles_hint_key": self._build_miles_hint_key(filter_airline_codes(airlines)),
             "cash_miles_hint_params": self._build_miles_hint_params(filter_airline_codes(airlines), offer),
         }
+
+    def _map_segment(self, segment: dict, offer: dict) -> dict:
+        marketing = segment.get("marketing_carrier") or {}
+        operating = segment.get("operating_carrier") or {}
+        owner_carrier = offer.get("owner") or {}
+        airline_code = (
+            marketing.get("iata_code")
+            or operating.get("iata_code")
+            or owner_carrier.get("iata_code")
+            or "ZZ"
+        )
+        if is_placeholder_airline_code(airline_code):
+            airline_code = owner_carrier.get("iata_code") or airline_code
+        airline_name_raw = (
+            marketing.get("name") or operating.get("name") or owner_carrier.get("name") or ""
+        ).strip()
+        return {
+            "origin": self._airport_code(segment.get("origin")),
+            "destination": self._airport_code(segment.get("destination")),
+            "departure_at": segment.get("departing_at"),
+            "arrival_at": segment.get("arriving_at"),
+            "airline": airline_code,
+            "airline_name": airline_name_raw or None,
+            "flight_number": segment.get("marketing_carrier_flight_number")
+            or segment.get("operating_carrier_flight_number")
+            or segment.get("flight_number")
+            or "N/A",
+            "cabin_class": self._extract_cabin_class(offer),
+            "duration_minutes": self._duration_minutes(segment),
+            "technical_stops": [],
+        }
+
+    def _expand_segment_with_stops(self, segment: dict, base: dict) -> list[dict]:
+        """Duffel puede enviar escalas técnicas dentro de un mismo segmento (mismo vuelo)."""
+        stops = segment.get("stops") or []
+        if not stops:
+            return [base]
+
+        if any(not stop.get("arriving_at") or not stop.get("departing_at") for stop in stops):
+            base["technical_stops"] = [self._map_technical_stop(stop) for stop in stops]
+            return [base]
+
+        legs: list[dict] = []
+        cursor_origin = base["origin"]
+        cursor_depart = base["departure_at"]
+
+        for stop in stops:
+            airport = self._airport_code(stop.get("airport"))
+            if not airport or airport == "N/A":
+                continue
+            arrive_at = stop["arriving_at"]
+            depart_at = stop["departing_at"]
+            legs.append(
+                {
+                    **base,
+                    "origin": cursor_origin,
+                    "destination": airport,
+                    "departure_at": cursor_depart,
+                    "arrival_at": arrive_at,
+                    "duration_minutes": self._minutes_between_iso(cursor_depart, arrive_at),
+                    "technical_stops": [],
+                }
+            )
+            cursor_origin = airport
+            cursor_depart = depart_at
+
+        legs.append(
+            {
+                **base,
+                "origin": cursor_origin,
+                "destination": base["destination"],
+                "departure_at": cursor_depart,
+                "arrival_at": base["arrival_at"],
+                "duration_minutes": self._minutes_between_iso(cursor_depart, base["arrival_at"]),
+                "technical_stops": [],
+            }
+        )
+        return legs if legs else [base]
+
+    def _map_technical_stop(self, stop: dict) -> dict:
+        airport = self._airport_code(stop.get("airport"))
+        duration = stop.get("duration")
+        duration_minutes = self._parse_iso_duration(duration) if isinstance(duration, str) else 0
+        if not duration_minutes and stop.get("arriving_at") and stop.get("departing_at"):
+            duration_minutes = self._minutes_between_iso(stop["arriving_at"], stop["departing_at"])
+        return {"airport": airport, "duration_minutes": duration_minutes}
+
+    def _minutes_between_iso(self, start_iso: str, end_iso: str) -> int:
+        start = datetime.fromisoformat(start_iso.replace("Z", "+00:00"))
+        end = datetime.fromisoformat(end_iso.replace("Z", "+00:00"))
+        return max(0, int((end - start).total_seconds() // 60))
 
     def _airport_code(self, airport_payload: dict | None) -> str:
         if not airport_payload:

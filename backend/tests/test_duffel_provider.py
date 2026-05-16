@@ -67,6 +67,41 @@ def test_duffel_provider_requires_token(monkeypatch):
         asyncio.run(provider.search_offers(search))
 
 
+def test_duffel_provider_expands_technical_stops_into_legs():
+    offer = sample_duffel_offer()
+    offer["slices"][0]["segments"] = [
+        {
+            "origin": {"iata_code": "MVD"},
+            "destination": {"iata_code": "NRT"},
+            "departing_at": "2026-07-20T17:42:00+00:00",
+            "arriving_at": "2026-07-22T06:58:00+00:00",
+            "marketing_carrier": {"iata_code": "IB", "name": "Iberia"},
+            "operating_carrier": {"iata_code": "IB", "name": "Iberia"},
+            "marketing_carrier_flight_number": "3167",
+            "duration": "PT37H16M",
+            "stops": [
+                {
+                    "airport": {"iata_code": "MAD"},
+                    "arriving_at": "2026-07-21T08:00:00+00:00",
+                    "departing_at": "2026-07-21T10:30:00+00:00",
+                    "duration": "PT2H30M",
+                }
+            ],
+        }
+    ]
+
+    mapped = DuffelFlightProvider()._map_offer(offer)
+    legs = mapped["segments_by_slice"][0]
+
+    assert len(legs) == 2
+    assert legs[0]["origin"] == "MVD"
+    assert legs[0]["destination"] == "MAD"
+    assert legs[1]["origin"] == "MAD"
+    assert legs[1]["destination"] == "NRT"
+    assert legs[0]["flight_number"] == "3167"
+    assert legs[1]["flight_number"] == "3167"
+
+
 def test_duffel_provider_maps_offer_to_internal_shape():
     provider = DuffelFlightProvider()
 

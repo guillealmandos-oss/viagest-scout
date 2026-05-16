@@ -119,6 +119,7 @@ export interface AppDictionary {
       sliceInbound: string;
       sliceOther: string;
       connectionPrefix: string;
+      technicalStopPrefix: string;
     };
     segmentSchedule: {
       departLocalLabel: string;
@@ -349,6 +350,7 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         sliceInbound: "Vuelta",
         sliceOther: "Pierna {n}",
         connectionPrefix: "Conexión",
+        technicalStopPrefix: "Escala",
       },
       segmentSchedule: {
         departLocalLabel: "Salida · hora local en {code}",
@@ -582,6 +584,7 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         sliceInbound: "Return",
         sliceOther: "Leg {n}",
         connectionPrefix: "Connection",
+        technicalStopPrefix: "Stop",
       },
       segmentSchedule: {
         departLocalLabel: "Departure · local time at {code}",

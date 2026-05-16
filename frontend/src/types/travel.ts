@@ -119,6 +119,11 @@ export interface Itinerary {
   score_breakdown: Record<string, number>;
 }
 
+export interface SegmentTechnicalStop {
+  airport: string;
+  duration_minutes: number;
+}
+
 export interface Segment {
   origin: string;
   destination: string;
@@ -129,6 +134,7 @@ export interface Segment {
   flight_number: string;
   cabin_class: string;
   duration_minutes: number;
+  technical_stops?: SegmentTechnicalStop[];
 }
 
 export interface Layover {
