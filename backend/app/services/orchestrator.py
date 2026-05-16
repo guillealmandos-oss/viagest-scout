@@ -22,6 +22,7 @@ from app.services.explainer import StrategyExplainer
 from app.services.migration_rules import MigrationRulesEngine
 from app.services.normalizer import FlightOfferNormalizer
 from app.services.offer_deduper import OfferDeduper
+from app.core.flight_providers_config import resolve_active_flight_provider_names
 from app.services.offer_quality import filter_test_inventory, is_implausible_itinerary, uses_test_flight_inventory
 from app.services.provider_health import ProviderHealthService
 from app.services.providers.base import BaseFlightProvider
@@ -48,6 +49,12 @@ class SearchOrchestrator:
         traveler_record = self._create_traveler_profile(db, user.id, payload)
         self._replace_loyalty_profiles(db, user.id, payload)
 
+        if not self.providers:
+            _, skips = resolve_active_flight_provider_names()
+            if any(skip.reason == "test_token_blocked" for skip in skips):
+                raise UserFacingError("error.providers_live_required", status_code=503)
+            raise UserFacingError("error.providers_live_required", status_code=503)
+
         fetch_result = await self._fetch_offers(payload)
         if not fetch_result["offers"]:
             db.rollback()
@@ -57,6 +64,8 @@ class SearchOrchestrator:
                 provider_reports=fetch_result["provider_reports"],
             )
             db.commit()
+            if fetch_result.get("live_providers_required"):
+                raise UserFacingError("error.providers_live_required", status_code=503)
             raise UserFacingError("error.providers_unavailable", status_code=502)
 
         itineraries = self.normalizer.normalize(fetch_result["offers"], locale)

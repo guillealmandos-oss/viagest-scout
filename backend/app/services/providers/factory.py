@@ -1,19 +1,18 @@
 from app.core.config import get_settings
+from app.core.flight_providers_config import resolve_active_flight_provider_names
 from app.services.providers.base import BaseFlightProvider
 from app.services.providers.registry import build_provider
 
 
 def get_flight_provider(provider_name: str | None = None) -> BaseFlightProvider:
     settings = get_settings()
-    return build_provider(provider_name or settings.flight_provider)
+    if provider_name:
+        return build_provider(provider_name)
+    active_names, _ = resolve_active_flight_provider_names(settings)
+    resolved_name = active_names[0] if active_names else settings.flight_provider
+    return build_provider(resolved_name)
 
 
 def get_flight_providers() -> list[BaseFlightProvider]:
-    settings = get_settings()
-    configured_names = settings.flight_providers or [settings.flight_provider]
-    ordered_unique_names: list[str] = []
-    for provider_name in configured_names:
-        normalized_name = provider_name.lower().strip()
-        if normalized_name and normalized_name not in ordered_unique_names:
-            ordered_unique_names.append(normalized_name)
-    return [build_provider(provider_name) for provider_name in ordered_unique_names]
+    active_names, _ = resolve_active_flight_provider_names()
+    return [build_provider(provider_name) for provider_name in active_names]

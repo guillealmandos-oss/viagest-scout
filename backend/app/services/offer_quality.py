@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from app.core.config import Settings, get_settings
+from app.core.flight_providers_config import uses_test_flight_inventory
 from app.schemas.common import FlightSlice, ItineraryOption
 
 # Vuelos comerciales no operan más de ~18 h sin escala.
@@ -16,15 +17,6 @@ OCEANIA_AIRPORTS = frozenset({"SYD", "MEL", "BNE", "AKL", "PER"})
 
 # Referencia orientativa MVD ↔ Tokio ida y vuelta (mercado ~USD 2k+ en economy).
 LONG_HAUL_RT_PRICE_FLOOR_USD = 1_750.0
-
-
-def uses_test_flight_inventory(settings: Settings | None = None) -> bool:
-    settings = settings or get_settings()
-    token = (settings.duffel_api_token or "").strip().lower()
-    if token.startswith("duffel_test_"):
-        return True
-    amadeus_base = (settings.amadeus_base_url or "").lower()
-    return "test.api.amadeus" in amadeus_base
 
 
 def _slice_is_claimed_nonstop(slice_model: FlightSlice) -> bool:

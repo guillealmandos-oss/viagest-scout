@@ -125,6 +125,7 @@ def test_factory_returns_duffel_provider_when_selected(monkeypatch):
     monkeypatch.setenv("FLIGHT_PROVIDER", "duffel")
     monkeypatch.delenv("FLIGHT_PROVIDERS", raising=False)
     monkeypatch.setenv("DUFFEL_API_TOKEN", "duffel_test_123")
+    monkeypatch.setenv("ALLOW_DUFFEL_TEST", "true")
     get_settings.cache_clear()
 
     provider = get_flight_provider()
@@ -136,6 +137,10 @@ def test_factory_returns_multiple_providers_from_configured_list(monkeypatch):
     monkeypatch.setenv("FLIGHT_PROVIDER", "duffel")
     monkeypatch.setenv("FLIGHT_PROVIDERS", "duffel,amadeus,duffel")
     monkeypatch.setenv("DUFFEL_API_TOKEN", "duffel_test_123")
+    monkeypatch.setenv("ALLOW_DUFFEL_TEST", "true")
+    monkeypatch.setenv("AMADEUS_API_KEY", "test-key")
+    monkeypatch.setenv("AMADEUS_API_SECRET", "test-secret")
+    monkeypatch.setenv("AMADEUS_BASE_URL", "https://test.api.amadeus.com")
     get_settings.cache_clear()
 
     providers = get_flight_providers()
@@ -155,6 +160,7 @@ def test_provider_timeout_config_is_parsed_from_env(monkeypatch):
 def test_duffel_provider_uses_timeout_from_settings(monkeypatch):
     monkeypatch.setenv("PROVIDER_TIMEOUTS", "duffel:41")
     monkeypatch.setenv("DUFFEL_API_TOKEN", "duffel_test_123")
+    monkeypatch.setenv("ALLOW_DUFFEL_TEST", "true")
     get_settings.cache_clear()
 
     provider = DuffelFlightProvider()

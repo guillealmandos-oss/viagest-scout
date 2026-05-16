@@ -14,6 +14,8 @@ MESSAGES: dict[AppLocale, dict[str, str]] = {
         "error.internal_server_error": "Algo salió mal en el servidor. Revisá los logs del backend o probá de nuevo más tarde.",
         "error.search_not_found": "Búsqueda no encontrada.",
         "error.providers_unavailable": "No pudimos obtener opciones de vuelos en este momento. Inténtalo de nuevo en unos minutos.",
+        "error.providers_live_required":
+            "No hay proveedor con vuelos reales configurado. Usá Amadeus producción (api.amadeus.com) o un token Duffel live; el token duffel_test_ no se usa.",
         "error.no_itineraries_found": "No encontramos itinerarios utilizables para esa búsqueda.",
         "strategy.title.savings": "Estrategia ahorro",
         "strategy.title.experience": "Estrategia experiencia",
@@ -91,6 +93,8 @@ MESSAGES: dict[AppLocale, dict[str, str]] = {
         "error.internal_server_error": "Something went wrong on the server. Check backend logs or try again later.",
         "error.search_not_found": "Search not found.",
         "error.providers_unavailable": "We couldn't fetch flight options right now. Please try again in a few minutes.",
+        "error.providers_live_required":
+            "No live flight provider is configured. Use Amadeus production (api.amadeus.com) or a Duffel live token; duffel_test_ tokens are disabled.",
         "error.no_itineraries_found": "We couldn't find usable itineraries for that search.",
         "strategy.title.savings": "Savings strategy",
         "strategy.title.experience": "Experience strategy",

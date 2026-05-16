@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import analytics_router, searches_router
 from app.core.config import get_settings
 from app.core.database import init_db
+from app.core.flight_providers_config import flight_inventory_status
 
 
 settings = get_settings()
@@ -17,7 +18,18 @@ _startup_logger = logging.getLogger("uvicorn.error")
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    inventory = flight_inventory_status()
     _startup_logger.info("CORS allow_origins=%s", list(settings.allowed_origins))
+    _startup_logger.info(
+        "Flight providers active=%s skipped=%s test_inventory=%s",
+        inventory["active_providers"],
+        inventory["skipped_providers"],
+        inventory["uses_test_inventory"],
+    )
+    if not inventory["active_providers"]:
+        _startup_logger.warning(
+            "No live flight providers enabled. Configure Amadeus production or Duffel live token."
+        )
     yield
 
 
@@ -36,4 +48,10 @@ app.include_router(analytics_router)
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "environment": settings.app_env, "provider": settings.flight_provider}
+    inventory = flight_inventory_status()
+    return {
+        "status": "ok",
+        "environment": settings.app_env,
+        "provider": settings.flight_provider,
+        "flight_providers": inventory,
+    }

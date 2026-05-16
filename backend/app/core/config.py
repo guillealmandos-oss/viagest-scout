@@ -10,8 +10,9 @@ class Settings(BaseSettings):
     app_name: str = "Viagest Scout API"
     app_env: str = "development"
     database_url: str = "sqlite:///./travel_strategy.db"
-    flight_provider: str = "duffel"
+    flight_provider: str = "amadeus"
     flight_providers: Annotated[list[str], NoDecode] = Field(default_factory=list)
+    allow_duffel_test: bool = False
     provider_timeouts: Annotated[dict[str, float], NoDecode] = Field(
         default_factory=lambda: {"duffel": 30.0, "amadeus": 25.0, "demo": 5.0}
     )

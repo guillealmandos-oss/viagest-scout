@@ -54,20 +54,30 @@ uvicorn app.main:app --host 0.0.0.0 --port $PORT
 APP_NAME=Viagest Scout API
 APP_ENV=production
 DATABASE_URL=${{Postgres.DATABASE_URL}}
-FLIGHT_PROVIDER=duffel
-FLIGHT_PROVIDERS=duffel
-PROVIDER_TIMEOUTS=duffel:30,amadeus:25,demo:5
+FLIGHT_PROVIDER=amadeus
+FLIGHT_PROVIDERS=amadeus
+ALLOW_DUFFEL_TEST=false
+PROVIDER_TIMEOUTS=amadeus:25,duffel:30
 DEFAULT_CURRENCY=USD
 ALLOWED_ORIGINS=https://<frontend-domain>.up.railway.app
-DUFFEL_API_TOKEN=...
-DUFFEL_BASE_URL=https://api.duffel.com
-DUFFEL_VERSION=v2
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini
-AMADEUS_API_KEY=
-AMADEUS_API_SECRET=
-AMADEUS_BASE_URL=https://test.api.amadeus.com
+# Amadeus producción (vuelos reales) — developers.amadeus.com → My apps → Production
+AMADEUS_API_KEY=<production_key>
+AMADEUS_API_SECRET=<production_secret>
+AMADEUS_BASE_URL=https://api.amadeus.com
+# Opcional: Duffel LIVE (no duffel_test_*). Requiere cuenta comercial.
+# DUFFEL_API_TOKEN=<live_token>
+# DUFFEL_BASE_URL=https://api.duffel.com
+# DUFFEL_VERSION=v2
 ```
+
+### Vuelos reales (importante)
+
+- **`duffel_test_*` está deshabilitado** por defecto: no alimenta las estrategias en producción.
+- **Recomendado para empezar:** [Amadeus Self-Service](https://developers.amadeus.com) con `AMADEUS_BASE_URL=https://api.amadeus.com`.
+- Verificá `GET /health` en el backend: debe listar `active_providers: ["amadeus"]` y `uses_test_inventory: false`.
+- El 401 de Duffel en telemetría suele ser token vacío, revocado o de test mientras `FLIGHT_PROVIDERS` sigue apuntando a `duffel`.
 
 ## 3. Frontend
 
