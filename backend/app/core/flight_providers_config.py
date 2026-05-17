@@ -74,6 +74,10 @@ def resolve_active_flight_provider_names(
 
         skips.append(ProviderSkip(name, "unsupported"))
 
+    if not active and settings.allow_demo_fallback and "demo" not in active:
+        active.append("demo")
+        skips.append(ProviderSkip("demo", "auto_fallback"))
+
     return active, skips
 
 
@@ -100,4 +104,7 @@ def flight_inventory_status(settings: Settings | None = None) -> dict:
         "duffel_test_token_blocked": any(s.reason == "test_token_blocked" for s in skips),
         "allow_sandbox": settings.allow_duffel_test,
         "allow_demo_provider": settings.allow_demo_provider,
+        "allow_demo_fallback": settings.allow_demo_fallback,
+        "demo_auto_fallback": "demo" in active
+        and any(s.reason == "auto_fallback" for s in skips),
     }

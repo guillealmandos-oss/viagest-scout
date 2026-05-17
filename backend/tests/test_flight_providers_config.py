@@ -7,6 +7,7 @@ def test_blocks_duffel_test_token_by_default():
         flight_providers=["duffel"],
         duffel_api_token="duffel_test_abc",
         allow_duffel_test=False,
+        allow_demo_fallback=False,
     )
     active, skips = resolve_active_flight_provider_names(settings)
     assert active == []
@@ -33,6 +34,7 @@ def test_blocks_amadeus_test_host_when_sandbox_disallowed():
         amadeus_api_secret="secret",
         amadeus_base_url="https://test.api.amadeus.com",
         allow_duffel_test=False,
+        allow_demo_fallback=False,
     )
     active, skips = resolve_active_flight_provider_names(settings)
     assert active == []

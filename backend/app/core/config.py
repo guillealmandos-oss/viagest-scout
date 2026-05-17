@@ -17,6 +17,10 @@ class Settings(BaseSettings):
         default=False,
         validation_alias=AliasChoices("ALLOW_DEMO_PROVIDER", "allow_demo_provider"),
     )
+    allow_demo_fallback: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("ALLOW_DEMO_FALLBACK", "allow_demo_fallback"),
+    )
     provider_timeouts: Annotated[dict[str, float], NoDecode] = Field(
         default_factory=lambda: {"duffel": 30.0, "amadeus": 25.0, "demo": 5.0}
     )
