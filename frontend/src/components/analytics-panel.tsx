@@ -1,6 +1,7 @@
 import { AppDictionary } from "@/i18n/dictionary";
 import { AppLocale } from "@/i18n/config";
 import { getAnalyticsSummary, getProviderHealthSummary } from "@/lib/api";
+import { formatProviderError } from "@/lib/providerErrors";
 
 import { SectionCard } from "./section-card";
 
@@ -73,7 +74,7 @@ export async function AnalyticsPanel({
                 key={`provider-${item.search_id}-${item.created_at}`}
                 className="alert-warning px-4 py-3 text-sm leading-6"
               >
-                <p>{item.text}</p>
+                <p>{formatProviderError(item.text, locale) ?? item.text}</p>
               </article>
             ))}
           </div>
@@ -126,7 +127,8 @@ export async function AnalyticsPanel({
                 ) : null}
                 {item.last_error ? (
                   <p className="alert-warning mt-3 px-3 py-2 text-xs leading-5">
-                    {copy.lastErrorPrefix} {item.last_error}
+                    {copy.lastErrorPrefix}{" "}
+                    {formatProviderError(item.last_error, locale, item.provider_name) ?? item.last_error}
                   </p>
                 ) : null}
               </article>

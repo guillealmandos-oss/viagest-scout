@@ -11,7 +11,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.errors import UserFacingError
-from app.core.i18n import AppLocale, render_message_items, t
+from app.core.i18n import DEFAULT_LOCALE, AppLocale, render_message_items, t
 from app.models.analytics import FeedbackEvent
 from app.models.search import ItineraryRecord, SearchRecord, StrategyResultRecord
 from app.models.user import LoyaltyProfile, TravelerProfile, User
@@ -24,6 +24,7 @@ from app.services.normalizer import FlightOfferNormalizer
 from app.services.offer_deduper import OfferDeduper
 from app.core.flight_providers_config import resolve_active_flight_provider_names
 from app.services.offer_quality import filter_test_inventory, is_implausible_itinerary, uses_test_flight_inventory
+from app.services.provider_errors import explain_provider_error, provider_error_item
 from app.services.provider_health import ProviderHealthService
 from app.services.providers.base import BaseFlightProvider
 from app.services.providers.factory import get_flight_providers
@@ -267,7 +268,15 @@ class SearchOrchestrator:
         )
         db.commit()
 
-    def get_analytics_summary(self, db: Session) -> AnalyticsSummary:
+    def _render_provider_issue_text(self, locale: AppLocale, record: FeedbackEvent) -> str | None:
+        payload = record.payload_json or {}
+        provider_name = str(payload.get("provider_name", "unknown"))
+        error_detail = payload.get("error_detail")
+        if error_detail:
+            return explain_provider_error(locale, provider_name, error_detail)
+        return explain_provider_error(locale, provider_name, record.free_text)
+
+    def get_analytics_summary(self, db: Session, locale: AppLocale = DEFAULT_LOCALE) -> AnalyticsSummary:
         total_searches = db.scalar(select(func.count()).select_from(SearchRecord)) or 0
         total_events = db.scalar(select(func.count()).select_from(FeedbackEvent)) or 0
         saved_recommendations = db.scalar(
@@ -319,15 +328,15 @@ class SearchOrchestrator:
                 {
                     "event_name": record.event_name,
                     "search_id": record.search_id,
-                    "text": record.free_text,
+                    "text": self._render_provider_issue_text(locale, record) or record.free_text,
                     "created_at": record.created_at.isoformat(),
                 }
                 for record in recent_provider_issue_records
             ],
         )
 
-    def get_provider_health_summary(self, db: Session):
-        return self.provider_health.get_summary(db)
+    def get_provider_health_summary(self, db: Session, locale: AppLocale = DEFAULT_LOCALE):
+        return self.provider_health.get_summary(db, locale=locale)
 
     async def _fetch_offers(self, payload: SearchCreateRequest) -> dict:
         provider_tasks = [self._fetch_from_provider(provider, payload) for provider in self.providers]
@@ -408,7 +417,8 @@ class SearchOrchestrator:
             }
         except Exception as exc:
             latency_ms = round((perf_counter() - started_at) * 1000, 2)
-            error_message = f"{provider.provider_name.title()} search failed: {exc}"
+            error_detail = provider_error_item(provider.provider_name, exc)
+            error_message = explain_provider_error(DEFAULT_LOCALE, provider.provider_name, error_detail)
             metadata = provider.get_last_request_metadata()
             return {
                 "provider_name": provider.provider_name,
@@ -419,6 +429,7 @@ class SearchOrchestrator:
                     "latency_ms": latency_ms,
                     "offer_count": 0,
                     "error_message": error_message,
+                    "error_detail": error_detail,
                     "external_request_id": metadata.get("external_request_id"),
                     "external_correlation_id": metadata.get("external_correlation_id"),
                 },

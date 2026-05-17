@@ -43,10 +43,11 @@ def resolve_active_flight_provider_names(
 
     for name in ordered_unique:
         if name == "demo":
-            if production or not settings.allow_duffel_test:
-                skips.append(ProviderSkip(name, "demo_not_allowed"))
-            else:
+            sandbox_dev = not production and settings.allow_duffel_test
+            if settings.allow_demo_provider or sandbox_dev:
                 active.append(name)
+            else:
+                skips.append(ProviderSkip(name, "demo_not_allowed"))
             continue
 
         if name == "duffel":
@@ -84,6 +85,8 @@ def uses_test_flight_inventory(settings: Settings | None = None) -> bool:
         return True
     if "amadeus" in active and amadeus_uses_test_host(settings):
         return True
+    if "demo" in active:
+        return True
     return False
 
 
@@ -96,4 +99,5 @@ def flight_inventory_status(settings: Settings | None = None) -> dict:
         "uses_test_inventory": uses_test_flight_inventory(settings),
         "duffel_test_token_blocked": any(s.reason == "test_token_blocked" for s in skips),
         "allow_sandbox": settings.allow_duffel_test,
+        "allow_demo_provider": settings.allow_demo_provider,
     }

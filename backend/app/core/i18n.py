@@ -33,6 +33,19 @@ MESSAGES: dict[AppLocale, dict[str, str]] = {
         "provider.assumption.active.note": "{provider} devolvió {offer_count} ofertas para esta búsqueda.",
         "provider.assumption.partial_failure.rule": "Falla parcial de proveedor",
         "provider.assumption.partial_failure.note": "Uno de los proveedores configurados no devolvió resultados para esta búsqueda.",
+        "provider.error.duffel.unauthorized":
+            "Duffel rechazó las credenciales (401). Usá un token live (duffel_live_…) y verificá que la cuenta esté activada.",
+        "provider.error.duffel.missing_token":
+            "Falta DUFFEL_API_TOKEN en el backend. Sin token live no hay inventario real.",
+        "provider.error.amadeus.missing_credentials":
+            "Faltan credenciales de Amadeus (AMADEUS_API_KEY / AMADEUS_API_SECRET).",
+        "provider.error.missing_credentials": "Faltan credenciales para {provider}.",
+        "provider.error.unauthorized": "{provider} rechazó las credenciales. Revisá la configuración del proveedor.",
+        "provider.error.forbidden": "{provider} denegó el acceso (403).",
+        "provider.error.timeout": "{provider} no respondió a tiempo. Probá de nuevo en unos minutos.",
+        "provider.error.rate_limited": "{provider} limitó las consultas (429). Esperá un momento.",
+        "provider.error.network": "No hubo conexión estable con {provider}.",
+        "provider.error.generic": "No pudimos consultar {provider}. Revisá la configuración del backend.",
         "provider.assumption.test_inventory.rule": "Inventario de prueba",
         "provider.assumption.test_inventory.note":
             "El backend usa credenciales de sandbox (Duffel test o Amadeus test). Precios e itinerarios pueden ser ficticios y no comparables con Skyscanner ni con la venta real.",
@@ -112,6 +125,19 @@ MESSAGES: dict[AppLocale, dict[str, str]] = {
         "provider.assumption.active.note": "{provider} returned {offer_count} offers for this search.",
         "provider.assumption.partial_failure.rule": "Partial provider failure",
         "provider.assumption.partial_failure.note": "One of the configured providers did not return results for this search.",
+        "provider.error.duffel.unauthorized":
+            "Duffel rejected the credentials (401). Use a live token (duffel_live_…) and confirm the account is activated.",
+        "provider.error.duffel.missing_token":
+            "DUFFEL_API_TOKEN is missing on the backend. Without a live token there is no real inventory.",
+        "provider.error.amadeus.missing_credentials":
+            "Amadeus credentials are missing (AMADEUS_API_KEY / AMADEUS_API_SECRET).",
+        "provider.error.missing_credentials": "Credentials for {provider} are missing.",
+        "provider.error.unauthorized": "{provider} rejected the credentials. Check the provider configuration.",
+        "provider.error.forbidden": "{provider} denied access (403).",
+        "provider.error.timeout": "{provider} timed out. Try again in a few minutes.",
+        "provider.error.rate_limited": "{provider} rate-limited requests (429). Wait a moment.",
+        "provider.error.network": "Could not reach {provider} reliably.",
+        "provider.error.generic": "We could not query {provider}. Check the backend configuration.",
         "provider.assumption.test_inventory.rule": "Test inventory",
         "provider.assumption.test_inventory.note":
             "The backend is using sandbox credentials (Duffel test or Amadeus test). Fares and itineraries may be fictional and are not comparable to Skyscanner or real booking.",

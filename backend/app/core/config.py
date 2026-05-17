@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     flight_provider: str = "amadeus"
     flight_providers: Annotated[list[str], NoDecode] = Field(default_factory=list)
     allow_duffel_test: bool = False
+    allow_demo_provider: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("ALLOW_DEMO_PROVIDER", "allow_demo_provider"),
+    )
     provider_timeouts: Annotated[dict[str, float], NoDecode] = Field(
         default_factory=lambda: {"duffel": 30.0, "amadeus": 25.0, "demo": 5.0}
     )
@@ -74,11 +78,15 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def merge_frontend_origin_into_cors(self):
-        """Opcional en Railway: FRONTEND_ORIGIN=https://tu-frontend.up.railway.app sin tocar ALLOWED_ORIGINS."""
-        if self.frontend_origin:
-            normalized = self._normalize_origin(self.frontend_origin)
-            if normalized and normalized not in self.allowed_origins:
-                object.__setattr__(self, "allowed_origins", [*self.allowed_origins, normalized])
+        """Opcional en Railway: FRONTEND_ORIGIN=https://scout.viagest.app (varios orígenes separados por coma)."""
+        if not self.frontend_origin:
+            return self
+        merged = list(self.allowed_origins)
+        for part in self.frontend_origin.split(","):
+            normalized = self._normalize_origin(part)
+            if normalized and normalized not in merged:
+                merged.append(normalized)
+        object.__setattr__(self, "allowed_origins", merged)
         return self
 
     @field_validator("flight_providers", mode="before")

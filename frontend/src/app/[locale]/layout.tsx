@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { DevelopmentBanner } from "@/components/development-banner";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { getLocaleDictionary } from "@/i18n/server";
 
@@ -71,6 +72,8 @@ export default async function LocaleLayout({
         />
       </header>
 
+      <DevelopmentBanner dictionary={dictionary} />
+
       <main className="flex-1">{children}</main>
 
       <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--color-border)] pt-6">
@@ -78,7 +81,7 @@ export default async function LocaleLayout({
           © {new Date().getFullYear()} Viagest · Scout decide. Flow te acompaña.
         </p>
         <p className="text-[0.72rem] text-[var(--color-text-faint)]">
-          Datos de vuelos provistos por Duffel · Precios orientativos
+          Demo en desarrollo · Los datos mostrados pueden no ser reales
         </p>
       </footer>
     </div>

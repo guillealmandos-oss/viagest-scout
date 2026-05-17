@@ -59,7 +59,9 @@ FLIGHT_PROVIDERS=amadeus
 ALLOW_DUFFEL_TEST=false
 PROVIDER_TIMEOUTS=amadeus:25,duffel:30
 DEFAULT_CURRENCY=USD
-ALLOWED_ORIGINS=https://<frontend-domain>.up.railway.app
+ALLOWED_ORIGINS=http://localhost:3000,https://<frontend-domain>.up.railway.app,https://scout.viagest.app
+# Alternativa: solo agregar el dominio custom sin reescribir ALLOWED_ORIGINS:
+# FRONTEND_ORIGIN=https://scout.viagest.app,https://<frontend-domain>.up.railway.app
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini
 # Amadeus producción (vuelos reales) — developers.amadeus.com → My apps → Production
@@ -71,6 +73,19 @@ AMADEUS_BASE_URL=https://api.amadeus.com
 # DUFFEL_BASE_URL=https://api.duffel.com
 # DUFFEL_VERSION=v2
 ```
+
+### Demo pública (scout.viagest.app sin API live aún)
+
+Si todavía no tenés Amadeus producción ni Duffel live, podés habilitar itinerarios **ficticios** de demostración (la UI ya avisa que no son reales):
+
+```env
+FLIGHT_PROVIDER=demo
+FLIGHT_PROVIDERS=demo
+ALLOW_DEMO_PROVIDER=true
+ALLOW_DUFFEL_TEST=false
+```
+
+Cuando tengas credenciales live, volvé a `FLIGHT_PROVIDERS=amadeus` (o `duffel`) y desactivá `ALLOW_DEMO_PROVIDER`.
 
 ### Vuelos reales (importante)
 
@@ -114,7 +129,9 @@ NEXT_PUBLIC_API_BASE_URL=https://<backend-domain>.up.railway.app
 3. setear `NEXT_PUBLIC_API_BASE_URL` en frontend
 4. deploy del frontend
 5. copiar el dominio del frontend
-6. agregarlo a `ALLOWED_ORIGINS` del backend
+6. agregar **todos** los dominios del frontend a CORS del backend (`ALLOWED_ORIGINS` o `FRONTEND_ORIGIN`)
+   - Con dominio custom: incluir `https://scout.viagest.app` además del `*.up.railway.app`
+   - Si falta, el navegador bloquea `POST /api/v1/searches` con error CORS en la consola
 7. redeploy backend si hace falta
 
 ## 5. Verificacion post-deploy

@@ -32,3 +32,12 @@ def test_frontend_origin_merged_into_allowed_origins() -> None:
     )
     assert "http://localhost:3000" in s.allowed_origins
     assert "https://app.example.test" in s.allowed_origins
+
+
+def test_frontend_origin_accepts_comma_separated_list() -> None:
+    s = Settings(
+        allowed_origins="http://localhost:3000",
+        frontend_origin="https://scout.viagest.app,https://viagest-scout-production.up.railway.app",
+    )
+    assert "https://scout.viagest.app" in s.allowed_origins
+    assert "https://viagest-scout-production.up.railway.app" in s.allowed_origins

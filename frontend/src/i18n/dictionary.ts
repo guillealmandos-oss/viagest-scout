@@ -1,6 +1,10 @@
 import { AppLocale } from "./config";
 
 export interface AppDictionary {
+  developmentBanner: {
+    title: string;
+    body: string;
+  };
   header: {
     eyebrow: string;
     title: string;
@@ -18,6 +22,12 @@ export interface AppDictionary {
       highlights: string[];
     };
     mvp: {
+      eyebrow: string;
+      title: string;
+      subtitle: string;
+      items: string[];
+    };
+    highlights: {
       eyebrow: string;
       title: string;
       subtitle: string;
@@ -71,6 +81,13 @@ export interface AppDictionary {
     submitIdle: string;
     submitLoading: string;
     errorFallback: string;
+    steps: {
+      indicator: string;
+      step1Title: string;
+      step2Title: string;
+      next: string;
+      back: string;
+    };
   };
   searchResult: {
     eyebrowPrefix: string;
@@ -191,6 +208,11 @@ export interface AppDictionary {
 
 const dictionaries: Record<AppLocale, AppDictionary> = {
   es: {
+    developmentBanner: {
+      title: "Scout está en desarrollo — datos de demostración",
+      body:
+        "Los precios, itinerarios y estrategias que ves pueden ser de prueba o inventario ficticio. No son reales ni reservables. Usá los enlaces externos solo como referencia hasta que conectemos proveedores live.",
+    },
     header: {
       eyebrow: "Viagest Scout",
       title: "Descubrimiento y estrategia inteligente de vuelos con IA",
@@ -227,12 +249,21 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
           "Persistencia local lista para evolucionar a PostgreSQL y proveedor real vía Duffel como base del MVP.",
         ],
       },
+      highlights: {
+        eyebrow: "Por qué Scout",
+        title: "Tres estrategias, no mil resultados",
+        subtitle: "Compará precio, tiempo, millas y fricción real en un solo vistazo.",
+        items: [
+          "Visas y conexiones riesgosas",
+          "Stopovers con costo marginal bajo",
+          "Uso más inteligente de programas loyalty",
+        ],
+      },
     },
     searchForm: {
-      eyebrow: "Sprint 1 + 2",
-      title: "Captura de contexto del viajero",
-      subtitle:
-        "La búsqueda ya entra con preferencias, restricciones, equipaje y perfil loyalty. Eso permite ranquear con criterio en vez de solo listar vuelos.",
+      eyebrow: "Tu viaje",
+      title: "Contanos el viaje",
+      subtitle: "Con ruta, fechas y preferencias armamos tres estrategias para decidir mejor.",
       fields: {
         origin: "Origen",
         destination: "Destino",
@@ -288,10 +319,17 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         stopoverInterest: "Estoy abierto a stopovers si el costo marginal es razonable.",
       },
       footer:
-        "El backend persiste el contexto del viajero, consulta proveedor de vuelos, normaliza itinerarios y devuelve tres estrategias con scoring, explicación y flags de riesgo.",
+        "Analizamos inventario real cuando el proveedor está configurado y devolvemos tres estrategias explicadas.",
       submitIdle: "Generar 3 estrategias",
       submitLoading: "Analizando viaje...",
       errorFallback: "No se pudo generar la estrategia.",
+      steps: {
+        indicator: "Paso {current} de {total}",
+        step1Title: "Ruta y fechas",
+        step2Title: "Perfil y preferencias",
+        next: "Siguiente",
+        back: "Atrás",
+      },
     },
     searchResult: {
       eyebrowPrefix: "Proveedor activo:",
@@ -381,9 +419,9 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
       },
     },
     feedback: {
-      eyebrow: "Sprint 6",
-      title: "Capturar feedback",
-      subtitle: "El MVP ya persiste comentarios y deja una traza de uso para la beta cerrada.",
+      eyebrow: "Tu opinión",
+      title: "¿Qué te pareció?",
+      subtitle: "Tu feedback ayuda a afinar las estrategias en la beta.",
       placeholder: "Ejemplo: me sorprendió el stopover en Lisboa, pero me gustaría ver hotel o reglas de visa más detalladas.",
       footer: "El evento queda disponible en el panel de telemetría para medir valor percibido.",
       submitIdle: "Enviar feedback",
@@ -391,9 +429,9 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
       submitSuccess: "Feedback enviado",
     },
     analytics: {
-      eyebrow: "Sprint 6",
+      eyebrow: "Actividad",
       title: "Telemetría beta",
-      subtitle: "Panel inicial para ver si el MVP genera interacción, guardados y feedback real.",
+      subtitle: "Resumen de búsquedas, guardados y estado de los proveedores de vuelos.",
       unavailable: "No se pudo cargar el resumen de analytics todavía. Levantá el backend y generá una búsqueda para poblar el panel.",
       metrics: {
         searches: "Búsquedas",
@@ -433,6 +471,11 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
     },
   },
   en: {
+    developmentBanner: {
+      title: "Scout is in development — demonstration data",
+      body:
+        "Prices, itineraries, and strategies may come from test or fictional inventory. They are not real or bookable. Use external links for reference only until live providers are connected.",
+    },
     header: {
       eyebrow: "Viagest Scout",
       title: "AI-powered flight discovery and strategy",
@@ -469,12 +512,21 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
           "Local persistence ready to evolve to PostgreSQL and a live Duffel provider as the MVP baseline.",
         ],
       },
+      highlights: {
+        eyebrow: "Why Scout",
+        title: "Three strategies, not a thousand results",
+        subtitle: "Compare price, time, miles, and real friction in one view.",
+        items: [
+          "Visas and risky connections",
+          "Low-marginal-cost stopovers",
+          "Smarter use of loyalty programs",
+        ],
+      },
     },
     searchForm: {
-      eyebrow: "Sprint 1 + 2",
-      title: "Traveler context intake",
-      subtitle:
-        "The search already includes preferences, restrictions, baggage, and loyalty profile so ranking can be strategic instead of just listing flights.",
+      eyebrow: "Your trip",
+      title: "Tell us about the trip",
+      subtitle: "With route, dates, and preferences we build three strategies to decide faster.",
       fields: {
         origin: "Origin",
         destination: "Destination",
@@ -530,10 +582,17 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
         stopoverInterest: "I am open to stopovers if the marginal cost is reasonable.",
       },
       footer:
-        "The backend persists traveler context, queries flight providers, normalizes itineraries, and returns three strategies with scoring, explanations, and risk flags.",
+        "We analyze live inventory when the provider is configured and return three explained strategies.",
       submitIdle: "Generate 3 strategies",
       submitLoading: "Analyzing trip...",
       errorFallback: "We couldn't generate the strategy.",
+      steps: {
+        indicator: "Step {current} of {total}",
+        step1Title: "Route and dates",
+        step2Title: "Profile and preferences",
+        next: "Next",
+        back: "Back",
+      },
     },
     searchResult: {
       eyebrowPrefix: "Active provider:",
@@ -623,9 +682,9 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
       },
     },
     feedback: {
-      eyebrow: "Sprint 6",
-      title: "Capture feedback",
-      subtitle: "The MVP already persists comments and leaves a usage trace for the closed beta.",
+      eyebrow: "Your feedback",
+      title: "How did we do?",
+      subtitle: "Your notes help us refine strategies during the beta.",
       placeholder: "Example: the Lisbon stopover surprised me, but I'd like to see hotel options or more detailed visa rules.",
       footer: "The event becomes available in the telemetry panel to measure perceived value.",
       submitIdle: "Send feedback",
@@ -633,9 +692,9 @@ const dictionaries: Record<AppLocale, AppDictionary> = {
       submitSuccess: "Feedback sent",
     },
     analytics: {
-      eyebrow: "Sprint 6",
+      eyebrow: "Activity",
       title: "Beta telemetry",
-      subtitle: "Initial panel to see whether the MVP is generating engagement, saves, and real feedback.",
+      subtitle: "Summary of searches, saves, and flight provider status.",
       unavailable: "We couldn't load the analytics summary yet. Start the backend and generate a search to populate the panel.",
       metrics: {
         searches: "Searches",

@@ -130,10 +130,14 @@ export function SearchForm({
   const router = useRouter();
   const copy = dictionary.searchForm;
   const [formState, setFormState] = useState<FormState>(() => buildInitialState(locale));
+  const [step, setStep] = useState<1 | 2>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fieldClassName = "field-input mt-2";
+  const stepIndicator = copy.steps.indicator
+    .replace("{current}", String(step))
+    .replace("{total}", "2");
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setFormState((current) => ({ ...current, [key]: value }));
@@ -141,6 +145,12 @@ export function SearchForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (step === 1) {
+      setStep(2);
+      setError(null);
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -156,172 +166,199 @@ export function SearchForm({
   }
 
   return (
-    <SectionCard
-      eyebrow={copy.eyebrow}
-      title={copy.title}
-      subtitle={copy.subtitle}
-    >
+    <SectionCard eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
       <form className="grid gap-6" onSubmit={handleSubmit}>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="field-label">
-            {copy.fields.origin}
-            <input className={fieldClassName} value={formState.origin} onChange={(event) => update("origin", event.target.value)} maxLength={3} />
-          </label>
-          <label className="field-label">
-            {copy.fields.destination}
-            <input className={fieldClassName} value={formState.destination} onChange={(event) => update("destination", event.target.value)} maxLength={3} />
-          </label>
-          <label className="field-label">
-            {copy.fields.departureDate}
-            <input className={fieldClassName} type="date" value={formState.departureDate} onChange={(event) => update("departureDate", event.target.value)} />
-          </label>
-          <label className="field-label">
-            {copy.fields.returnDate}
-            <input className={fieldClassName} type="date" value={formState.returnDate} onChange={(event) => update("returnDate", event.target.value)} />
-          </label>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)] pb-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+            {stepIndicator}
+          </p>
+          <p className="text-sm font-medium text-[var(--color-gold)]">
+            {step === 1 ? copy.steps.step1Title : copy.steps.step2Title}
+          </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="field-label">
-            {copy.fields.flexibleDays}
-            <input className={fieldClassName} type="number" min={0} max={14} value={formState.flexibleDays} onChange={(event) => update("flexibleDays", event.target.value)} />
-          </label>
-          <label className="field-label">
-            {copy.fields.budgetUsd}
-            <input className={fieldClassName} type="number" min={0} value={formState.budgetUsd} onChange={(event) => update("budgetUsd", event.target.value)} />
-          </label>
-          <label className="field-label">
-            {copy.fields.passengers}
-            <input className={fieldClassName} type="number" min={1} max={9} value={formState.passengers} onChange={(event) => update("passengers", event.target.value)} />
-          </label>
-          <label className="field-label">
-            {copy.fields.cabinClass}
-            <select className={fieldClassName} value={formState.cabinClass} onChange={(event) => update("cabinClass", event.target.value as FormState["cabinClass"])}>
-              <option value="ECONOMY">{copy.options.cabinClass.ECONOMY}</option>
-              <option value="PREMIUM_ECONOMY">{copy.options.cabinClass.PREMIUM_ECONOMY}</option>
-              <option value="BUSINESS">{copy.options.cabinClass.BUSINESS}</option>
-              <option value="FIRST">{copy.options.cabinClass.FIRST}</option>
-            </select>
-          </label>
-        </div>
+        {step === 1 ? (
+          <>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <label className="field-label">
+                {copy.fields.origin}
+                <input className={fieldClassName} value={formState.origin} onChange={(event) => update("origin", event.target.value)} maxLength={3} required />
+              </label>
+              <label className="field-label">
+                {copy.fields.destination}
+                <input className={fieldClassName} value={formState.destination} onChange={(event) => update("destination", event.target.value)} maxLength={3} required />
+              </label>
+              <label className="field-label">
+                {copy.fields.departureDate}
+                <input className={fieldClassName} type="date" value={formState.departureDate} onChange={(event) => update("departureDate", event.target.value)} required />
+              </label>
+              <label className="field-label">
+                {copy.fields.returnDate}
+                <input className={fieldClassName} type="date" value={formState.returnDate} onChange={(event) => update("returnDate", event.target.value)} />
+              </label>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="field-label">
-            {copy.fields.nationality}
-            <input className={fieldClassName} value={formState.nationality} onChange={(event) => update("nationality", event.target.value)} maxLength={2} />
-          </label>
-          <label className="field-label">
-            {copy.fields.residenceCountry}
-            <input className={fieldClassName} value={formState.residenceCountry} onChange={(event) => update("residenceCountry", event.target.value)} maxLength={2} />
-          </label>
-          <label className="field-label">
-            {copy.fields.riskTolerance}
-            <select className={fieldClassName} value={formState.riskTolerance} onChange={(event) => update("riskTolerance", event.target.value as FormState["riskTolerance"])}>
-              <option value="low">{copy.options.riskTolerance.low}</option>
-              <option value="medium">{copy.options.riskTolerance.medium}</option>
-              <option value="high">{copy.options.riskTolerance.high}</option>
-            </select>
-          </label>
-          <label className="field-label">
-            {copy.fields.preferredStrategy}
-            <select className={fieldClassName} value={formState.preferredStrategy} onChange={(event) => update("preferredStrategy", event.target.value as TravelPriority)}>
-              <option value="savings">{copy.options.preferredStrategy.savings}</option>
-              <option value="balanced">{copy.options.preferredStrategy.balanced}</option>
-              <option value="comfort">{copy.options.preferredStrategy.comfort}</option>
-              <option value="experience">{copy.options.preferredStrategy.experience}</option>
-              <option value="miles">{copy.options.preferredStrategy.miles}</option>
-            </select>
-          </label>
-        </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <label className="field-label">
+                {copy.fields.flexibleDays}
+                <input className={fieldClassName} type="number" min={0} max={14} value={formState.flexibleDays} onChange={(event) => update("flexibleDays", event.target.value)} />
+              </label>
+              <label className="field-label">
+                {copy.fields.budgetUsd}
+                <input className={fieldClassName} type="number" min={0} value={formState.budgetUsd} onChange={(event) => update("budgetUsd", event.target.value)} />
+              </label>
+              <label className="field-label">
+                {copy.fields.passengers}
+                <input className={fieldClassName} type="number" min={1} max={9} value={formState.passengers} onChange={(event) => update("passengers", event.target.value)} required />
+              </label>
+              <label className="field-label">
+                {copy.fields.cabinClass}
+                <select className={fieldClassName} value={formState.cabinClass} onChange={(event) => update("cabinClass", event.target.value as FormState["cabinClass"])}>
+                  <option value="ECONOMY">{copy.options.cabinClass.ECONOMY}</option>
+                  <option value="PREMIUM_ECONOMY">{copy.options.cabinClass.PREMIUM_ECONOMY}</option>
+                  <option value="BUSINESS">{copy.options.cabinClass.BUSINESS}</option>
+                  <option value="FIRST">{copy.options.cabinClass.FIRST}</option>
+                </select>
+              </label>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <label className="field-label">
+                {copy.fields.nationality}
+                <input className={fieldClassName} value={formState.nationality} onChange={(event) => update("nationality", event.target.value)} maxLength={2} required />
+              </label>
+              <label className="field-label">
+                {copy.fields.residenceCountry}
+                <input className={fieldClassName} value={formState.residenceCountry} onChange={(event) => update("residenceCountry", event.target.value)} maxLength={2} />
+              </label>
+              <label className="field-label">
+                {copy.fields.riskTolerance}
+                <select className={fieldClassName} value={formState.riskTolerance} onChange={(event) => update("riskTolerance", event.target.value as FormState["riskTolerance"])}>
+                  <option value="low">{copy.options.riskTolerance.low}</option>
+                  <option value="medium">{copy.options.riskTolerance.medium}</option>
+                  <option value="high">{copy.options.riskTolerance.high}</option>
+                </select>
+              </label>
+              <label className="field-label">
+                {copy.fields.preferredStrategy}
+                <select className={fieldClassName} value={formState.preferredStrategy} onChange={(event) => update("preferredStrategy", event.target.value as TravelPriority)}>
+                  <option value="savings">{copy.options.preferredStrategy.savings}</option>
+                  <option value="balanced">{copy.options.preferredStrategy.balanced}</option>
+                  <option value="comfort">{copy.options.preferredStrategy.comfort}</option>
+                  <option value="experience">{copy.options.preferredStrategy.experience}</option>
+                  <option value="miles">{copy.options.preferredStrategy.miles}</option>
+                </select>
+              </label>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="field-label">
-            {copy.fields.validVisas}
-            <input className={fieldClassName} value={formState.validVisas} onChange={(event) => update("validVisas", event.target.value)} placeholder={copy.placeholders.validVisas} />
-          </label>
-          <label className="field-label">
-            {copy.fields.maxStops}
-            <input className={fieldClassName} type="number" min={0} max={4} value={formState.maxStops} onChange={(event) => update("maxStops", event.target.value)} />
-          </label>
-        </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="field-label">
+                {copy.fields.validVisas}
+                <input className={fieldClassName} value={formState.validVisas} onChange={(event) => update("validVisas", event.target.value)} placeholder={copy.placeholders.validVisas} />
+              </label>
+              <label className="field-label">
+                {copy.fields.maxStops}
+                <input className={fieldClassName} type="number" min={0} max={4} value={formState.maxStops} onChange={(event) => update("maxStops", event.target.value)} />
+              </label>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="field-label">
-            {copy.fields.loyaltyProgram}
-            <input className={fieldClassName} value={formState.loyaltyProgram} onChange={(event) => update("loyaltyProgram", event.target.value)} placeholder={copy.placeholders.loyaltyProgram} />
-          </label>
-          <label className="field-label">
-            {copy.fields.loyaltyBalance}
-            <input className={fieldClassName} type="number" min={0} value={formState.loyaltyBalance} onChange={(event) => update("loyaltyBalance", event.target.value)} />
-          </label>
-        </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="field-label">
+                {copy.fields.loyaltyProgram}
+                <input className={fieldClassName} value={formState.loyaltyProgram} onChange={(event) => update("loyaltyProgram", event.target.value)} placeholder={copy.placeholders.loyaltyProgram} />
+              </label>
+              <label className="field-label">
+                {copy.fields.loyaltyBalance}
+                <input className={fieldClassName} type="number" min={0} value={formState.loyaltyBalance} onChange={(event) => update("loyaltyBalance", event.target.value)} />
+              </label>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="field-label">
-            {copy.fields.loyaltyBank}
-            <input className={fieldClassName} value={formState.loyaltyBank} onChange={(event) => update("loyaltyBank", event.target.value)} placeholder={copy.placeholders.loyaltyBank} />
-          </label>
-          <label className="field-label">
-            {copy.fields.transferPartners}
-            <input className={fieldClassName} value={formState.transferPartners} onChange={(event) => update("transferPartners", event.target.value)} placeholder={copy.placeholders.transferPartners} />
-          </label>
-        </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="field-label">
+                {copy.fields.loyaltyBank}
+                <input className={fieldClassName} value={formState.loyaltyBank} onChange={(event) => update("loyaltyBank", event.target.value)} placeholder={copy.placeholders.loyaltyBank} />
+              </label>
+              <label className="field-label">
+                {copy.fields.transferPartners}
+                <input className={fieldClassName} value={formState.transferPartners} onChange={(event) => update("transferPartners", event.target.value)} placeholder={copy.placeholders.transferPartners} />
+              </label>
+            </div>
 
-        <label className="field-label">
-          {copy.fields.notes}
-          <textarea
-            className={`${fieldClassName} min-h-28 resize-y`}
-            value={formState.notes}
-            onChange={(event) => update("notes", event.target.value)}
-            placeholder={copy.placeholders.notes}
-          />
-        </label>
+            <label className="field-label">
+              {copy.fields.notes}
+              <textarea
+                className={`${fieldClassName} min-h-28 resize-y`}
+                value={formState.notes}
+                onChange={(event) => update("notes", event.target.value)}
+                placeholder={copy.placeholders.notes}
+              />
+            </label>
 
-        <div className="panel-muted grid gap-3 p-4 md:grid-cols-2">
-          <label className="flex items-start gap-3 text-sm text-[var(--color-text-body)]">
-            <input
-              className="mt-1 size-4 rounded border-[var(--color-border-strong)] accent-[var(--color-gold)]"
-              type="checkbox"
-              checked={formState.checkedBagRequired}
-              onChange={(event) => update("checkedBagRequired", event.target.checked)}
-            />
-            {copy.toggles.checkedBagRequired}
-          </label>
-          <label className="flex items-start gap-3 text-sm text-[var(--color-text-body)]">
-            <input
-              className="mt-1 size-4 rounded border-[var(--color-border-strong)] accent-[var(--color-gold)]"
-              type="checkbox"
-              checked={formState.stopoverInterest}
-              onChange={(event) => update("stopoverInterest", event.target.checked)}
-            />
-            {copy.toggles.stopoverInterest}
-          </label>
-        </div>
+            <div className="panel-muted grid gap-3 p-4 md:grid-cols-2">
+              <label className="flex items-start gap-3 text-sm text-[var(--color-text-body)]">
+                <input
+                  className="mt-1 size-4 rounded border-[var(--color-border-strong)] accent-[var(--color-gold)]"
+                  type="checkbox"
+                  checked={formState.checkedBagRequired}
+                  onChange={(event) => update("checkedBagRequired", event.target.checked)}
+                />
+                {copy.toggles.checkedBagRequired}
+              </label>
+              <label className="flex items-start gap-3 text-sm text-[var(--color-text-body)]">
+                <input
+                  className="mt-1 size-4 rounded border-[var(--color-border-strong)] accent-[var(--color-gold)]"
+                  type="checkbox"
+                  checked={formState.stopoverInterest}
+                  onChange={(event) => update("stopoverInterest", event.target.checked)}
+                />
+                {copy.toggles.stopoverInterest}
+              </label>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="field-label">
-            {copy.fields.email}
-            <input className={fieldClassName} type="email" value={formState.email} onChange={(event) => update("email", event.target.value)} />
-          </label>
-          <label className="field-label">
-            {copy.fields.displayName}
-            <input className={fieldClassName} value={formState.displayName} onChange={(event) => update("displayName", event.target.value)} />
-          </label>
-        </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="field-label">
+                {copy.fields.email}
+                <input className={fieldClassName} type="email" value={formState.email} onChange={(event) => update("email", event.target.value)} />
+              </label>
+              <label className="field-label">
+                {copy.fields.displayName}
+                <input className={fieldClassName} value={formState.displayName} onChange={(event) => update("displayName", event.target.value)} />
+              </label>
+            </div>
+          </>
+        )}
 
         {error ? <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="max-w-2xl text-sm leading-6 text-[var(--color-text-muted)]">
-            {copy.footer}
-          </p>
-          <button
-            className="btn-brand px-6 py-3 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSubmitting}
-            type="submit"
-          >
-            {isSubmitting ? copy.submitLoading : copy.submitIdle}
-          </button>
+          {step === 2 ? (
+            <p className="max-w-2xl text-sm leading-6 text-[var(--color-text-muted)]">{copy.footer}</p>
+          ) : (
+            <span className="max-w-2xl" />
+          )}
+          <div className="flex flex-wrap justify-end gap-3">
+            {step === 2 ? (
+              <button
+                className="btn-outline-gold px-5 py-3"
+                type="button"
+                onClick={() => {
+                  setStep(1);
+                  setError(null);
+                }}
+              >
+                {copy.steps.back}
+              </button>
+            ) : null}
+            <button
+              className="btn-brand px-6 py-3 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isSubmitting}
+              type="submit"
+            >
+              {isSubmitting ? copy.submitLoading : step === 1 ? copy.steps.next : copy.submitIdle}
+            </button>
+          </div>
         </div>
       </form>
     </SectionCard>

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.i18n import AppLocale, get_request_locale
 from app.schemas.analytics import AnalyticsEventCreate, AnalyticsSummary, ProviderHealthSummary
 from app.services.orchestrator import SearchOrchestrator
 
@@ -11,13 +12,19 @@ service = SearchOrchestrator()
 
 
 @router.get("/summary", response_model=AnalyticsSummary)
-def get_analytics_summary(db: Session = Depends(get_db)) -> AnalyticsSummary:
-    return service.get_analytics_summary(db)
+def get_analytics_summary(
+    db: Session = Depends(get_db),
+    locale: AppLocale = Depends(get_request_locale),
+) -> AnalyticsSummary:
+    return service.get_analytics_summary(db, locale)
 
 
 @router.get("/provider-health", response_model=ProviderHealthSummary)
-def get_provider_health_summary(db: Session = Depends(get_db)) -> ProviderHealthSummary:
-    return service.get_provider_health_summary(db)
+def get_provider_health_summary(
+    db: Session = Depends(get_db),
+    locale: AppLocale = Depends(get_request_locale),
+) -> ProviderHealthSummary:
+    return service.get_provider_health_summary(db, locale)
 
 
 @router.post("/events", status_code=status.HTTP_202_ACCEPTED)
