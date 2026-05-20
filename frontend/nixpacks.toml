@@ -8,7 +8,7 @@ cmds = ["npm ci"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npm run start"
+cmd = "sh -c 'HOSTNAME=0.0.0.0 PORT=${PORT:-8080} exec npm run start'"
 
 [variables]
 NODE_OPTIONS = "--max-old-space-size=4096"

@@ -1,1 +1,1 @@
-web: npm run start
+web: sh -c 'HOSTNAME=0.0.0.0 PORT=${PORT:-8080} npm run start'

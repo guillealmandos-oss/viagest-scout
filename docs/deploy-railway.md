@@ -116,12 +116,15 @@ Si detecta `Procfile` + `nixpacks.toml`, no hace falta tocar nada. El start usa 
 npm run start
 ```
 
+Si Railway muestra **Queued** por incidente de plataforma, esperá a que procese el deploy o usá **Restart Deployment**.
+
 Si el deploy **crashea** (`illustrious-quietude` / 502):
 
 1. Abrí **Deploy Logs** y buscá `ENOMEM`, `Killed`, o `Could not find a production build`.
 2. Confirmá **Root Directory** = `frontend` (no la raíz del repo).
 3. Confirmá `NEXT_PUBLIC_API_BASE_URL` apuntando al backend **antes** del build del frontend.
 4. Reiniciá el deployment tras un push a `main`.
+5. El proceso debe escuchar en la variable **`PORT`** de Railway (Next la lee solo; no fijes puerto 3000).
 
 ### Variables sugeridas
 
