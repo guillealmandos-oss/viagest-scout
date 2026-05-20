@@ -110,11 +110,18 @@ npm run build
 
 ### Start Command
 
-Si detecta `Procfile`, no hace falta tocar nada. Si queres dejarlo explicito:
+Si detecta `Procfile` + `nixpacks.toml`, no hace falta tocar nada. El start usa `PORT` de Railway:
 
 ```bash
-npm run start -- --port $PORT
+npm run start
 ```
+
+Si el deploy **crashea** (`illustrious-quietude` / 502):
+
+1. Abrí **Deploy Logs** y buscá `ENOMEM`, `Killed`, o `Could not find a production build`.
+2. Confirmá **Root Directory** = `frontend` (no la raíz del repo).
+3. Confirmá `NEXT_PUBLIC_API_BASE_URL` apuntando al backend **antes** del build del frontend.
+4. Reiniciá el deployment tras un push a `main`.
 
 ### Variables sugeridas
 

@@ -2,6 +2,7 @@ import { AppLocale, DEFAULT_LOCALE } from "@/i18n/config";
 import { AnalyticsSummary, ProviderHealthSummary, SearchPayload, SearchResponse } from "@/types/travel";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
+const API_REQUEST_TIMEOUT_MS = 12_000;
 
 interface RequestOptions extends RequestInit {
   locale?: AppLocale;
@@ -9,8 +10,14 @@ interface RequestOptions extends RequestInit {
 
 async function request<T>(path: string, init?: RequestOptions): Promise<T> {
   const locale = init?.locale ?? DEFAULT_LOCALE;
+  const timeoutSignal = AbortSignal.timeout(API_REQUEST_TIMEOUT_MS);
+  const signal = init?.signal
+    ? AbortSignal.any([init.signal, timeoutSignal])
+    : timeoutSignal;
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
+    signal,
     headers: {
       "Content-Type": "application/json",
       "Accept-Language": locale,
